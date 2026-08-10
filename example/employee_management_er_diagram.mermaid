@@ -1,0 +1,205 @@
+erDiagram
+
+    %% ===================== USERS & ORG STRUCTURE =====================
+    AppUsers {
+        varchar2 PCNO PK
+        varchar2 Name
+        number Role
+    }
+
+    Divisions {
+        number Id PK
+        varchar2 Name UK
+    }
+
+    Categories {
+        number Id PK
+        varchar2 Name UK
+    }
+
+    UserDivisions {
+        varchar2 PCNO "PK, FK"
+        varchar2 DivisionName "PK, FK"
+    }
+
+    %% ===================== VENDORS & CONTRACTS =====================
+    Vendors {
+        number Id PK
+        varchar2 MasterId UK
+        varchar2 Name UK
+        varchar2 GemId
+        varchar2 ContactName
+        varchar2 ContactPhone
+        number IsActive
+    }
+
+    ContractPeriods {
+        number Id PK
+        varchar2 Category FK
+        number VendorId FK
+        date StartDate
+        date EndDate
+        varchar2 Status
+    }
+
+    ContractPeriodVendors {
+        number Id PK
+        number ContractPeriodId FK
+        number VendorId FK
+        varchar2 Category
+        number IsActive
+    }
+
+    ContractExtensions {
+        number Id PK
+        number ContractPeriodId FK
+        date OldEndDate
+        date NewEndDate
+        timestamp ExtensionDate
+    }
+
+    %% ===================== EMPLOYEES & ENGAGEMENTS =====================
+    Employees {
+        varchar2 MasterId PK
+        varchar2 ID
+        varchar2 Name
+        varchar2 Department FK
+        varchar2 Category
+        number CurrentEngagementId FK
+        varchar2 Status
+        date JoinDate
+        date ResignDate
+        date ContractEndDate
+    }
+
+    EmployeeEngagements {
+        number Id PK
+        varchar2 EmpID FK
+        number ContractPeriodId FK
+        number VendorId FK
+        varchar2 Category
+        varchar2 Department
+        date StartDate
+        date EndDate
+        varchar2 EndReason
+        number PrevEngagementId FK
+    }
+
+    EmployeeLeaveCredits {
+        number Id PK
+        varchar2 EmpID FK
+        number ContractPeriodId FK
+        number Amount
+        date EffectiveDate
+    }
+
+    %% ===================== ATTENDANCE & PAYROLL =====================
+    Attendance {
+        number Id PK
+        varchar2 EmpID FK
+        number EngagementId FK
+        number ContractPeriodId FK
+        number Year
+        number Month
+        number Day
+        number StatusValue
+        number IsHoliday
+        number AutoSat
+    }
+
+    CalculationWages {
+        number Year PK
+        number Month PK
+        varchar2 Category PK
+        number WageRate
+    }
+
+    CalculationOverrides {
+        number Year PK
+        number Month PK
+        varchar2 Category PK
+        varchar2 EmpID "PK, FK"
+        number EngagementId FK
+        number ContractPeriodId FK
+        number FinalDays
+    }
+
+    %% ===================== LOGS, REMARKS & DOCS (no formal FKs) =====================
+    EmployeeActionLogs {
+        number Id PK
+        varchar2 EmpMasterId
+        varchar2 ActionType
+        timestamp ActionTime
+    }
+
+    ActionLog {
+        number Id PK
+        varchar2 ActionType
+        varchar2 PerformedBy
+        varchar2 TargetId
+    }
+
+    AdminActionLog {
+        number Id PK
+        varchar2 ActionType
+        varchar2 PerformedBy
+        varchar2 TargetId
+    }
+
+    Attendance_Audit_Log {
+        number Id PK
+        varchar2 EmpID
+        number Year
+        number Month
+        number Day
+        number OldValue
+        number NewValue
+    }
+
+    AttendanceRemarks {
+        number Id PK
+        varchar2 SubmittedBy
+        varchar2 EmpID
+        date RemarkDate
+        number IsRead
+    }
+
+    Notices {
+        number Id PK
+        varchar2 Name
+        varchar2 FilePath
+        number IsHidden
+    }
+
+    CertificateTemplates {
+        varchar2 TemplateKey PK
+        varchar2 TemplateValue
+    }
+
+    %% ===================== RELATIONSHIPS =====================
+    AppUsers        ||--o{ UserDivisions        : "can manage"
+    Divisions       ||--o{ UserDivisions        : "scoped by"
+    Divisions       ||--o{ Employees            : "department of"
+
+    Categories      ||--o{ ContractPeriods      : "category of"
+    Vendors         ||--o{ ContractPeriods      : "primary vendor for"
+    ContractPeriods ||--o{ ContractPeriodVendors: "lists vendors"
+    Vendors         ||--o{ ContractPeriodVendors: "attached as"
+    ContractPeriods ||--o{ ContractExtensions   : "extended via"
+
+    Employees            ||--o{ EmployeeEngagements : "has stints"
+    ContractPeriods      ||--o{ EmployeeEngagements : "covers"
+    Vendors              ||--o{ EmployeeEngagements : "employs via"
+    EmployeeEngagements  ||--o| EmployeeEngagements : "carried over from"
+    EmployeeEngagements  ||--o| Employees           : "is current engagement of"
+
+    Employees       ||--o{ EmployeeLeaveCredits : "credited to"
+    ContractPeriods ||--o{ EmployeeLeaveCredits : "credited under"
+
+    Employees            ||--o{ Attendance : "marked for"
+    EmployeeEngagements  ||--o{ Attendance : "recorded during"
+    ContractPeriods      ||--o{ Attendance : "period of"
+
+    Employees            ||--o{ CalculationOverrides : "overridden for"
+    EmployeeEngagements  ||--o{ CalculationOverrides : "engagement of"
+    ContractPeriods      ||--o{ CalculationOverrides : "period of"

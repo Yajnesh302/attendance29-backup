@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant USER as User (Browser)
+    participant LOGIN as Login.aspx
+    participant DASH as Dashboard.aspx
+    participant ATT as Attendance.aspx
+    participant CALC as Calculation.aspx
+    participant DOC as Documents.aspx
+    participant DB as Oracle Database
+    participant AD as Active Directory
+
+    Note over USER,AD: LOGIN FLOW
+    USER->>LOGIN: Submit PCNO + Password
+    LOGIN->>AD: ADHelper.AuthenticateAndGetPCNO()
+    AD-->>LOGIN: PCNO (EmployeeID)
+    LOGIN->>DB: Query AppUsers for Role
+    DB-->>LOGIN: Role (0 or 1)
+    LOGIN->>DB: Query hrdata.empdetails for Name/Div
+    DB-->>LOGIN: Name, Designation, Division
+    LOGIN->>DB: Load UserDivisions (if non-admin)
+    DB-->>LOGIN: Allowed divisions list
+    LOGIN-->>USER: Redirect to Dashboard
+
+    Note over USER,DB: ATTENDANCE FLOW
+    USER->>ATT: GetData(year, month, category, div)
+    ATT->>DB: Query Employees + Engagements
+    ATT->>DB: Query Attendance records
+    ATT->>DB: Query previous month trailing data
+    DB-->>ATT: Employee + Attendance data
+    ATT-->>USER: Monthly grid with current values
+    USER->>ATT: Click cells (mark Present/Absent/Leave)
+    USER->>ATT: SaveData(year, month, data)
+    ATT->>DB: MERGE into Attendance table
+    ATT->>DB: Validate leave balances
+    ATT->>ATT: Recalculate next month Saturdays
+    ATT-->>USER: Success confirmation
+
+    Note over USER,DB: CALCULATION FLOW
+    USER->>CALC: GetCalculationData(year, month, cat)
+    CALC->>DB: Get wage rates (CalculationWages)
+    CALC->>DB: Get attendance records
+    CALC->>DB: Get overrides (CalculationOverrides)
+    DB-->>CALC: All calculation data
+    CALC->>CALC: Compute PresentDays per employee
+    CALC->>CALC: Apply Global Adjustments
+    CALC->>CALC: Apply Overrides
+    CALC->>CALC: Total Wage = FinalDays × WageRate
+    CALC-->>USER: Calculation grid display
+    USER->>CALC: SaveOverride(empId, finalDays)
+    CALC->>DB: MERGE into CalculationOverrides
+
+    Note over USER,DB: DOCUMENT GENERATION FLOW
+    USER->>DOC: GetCertificateData(year, month, cat)
+    DOC->>DB: Fetch employees, attendance, overrides
+    DOC->>DB: Fetch template settings
+    DB-->>DOC: Data + templates
+    DOC->>DOC: Generate HTML/DOCX document
+    DOC-->>USER: Download/GPRINT document

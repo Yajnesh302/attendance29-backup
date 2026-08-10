@@ -1,0 +1,56 @@
+namespace AttendanceApp {
+    public partial class Employee {
+        protected global::System.Web.UI.WebControls.Label lblMessage;
+        protected global::System.Web.UI.WebControls.TextBox txtMasterID;
+        protected global::System.Web.UI.WebControls.CheckBox chkIsRejoining;
+        protected global::System.Web.UI.WebControls.DropDownList ddlRejoiningEmployee;
+        protected global::System.Web.UI.WebControls.TextBox txtEmpID;
+        protected global::System.Web.UI.WebControls.TextBox txtEmpName;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDept;
+        protected global::System.Web.UI.WebControls.Label lblDeptHelp;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCat;
+        protected global::System.Web.UI.WebControls.Label lblCatHelp;
+        protected global::System.Web.UI.WebControls.TextBox txtJoinDate;
+        protected global::System.Web.UI.WebControls.TextBox txtLeaveBalance;
+        protected global::System.Web.UI.WebControls.TextBox txtPhone;
+        protected global::System.Web.UI.WebControls.TextBox txtEmail;
+        protected global::System.Web.UI.WebControls.TextBox txtAadhar;
+        protected global::System.Web.UI.WebControls.TextBox txtAddress;
+        protected global::System.Web.UI.WebControls.TextBox txtQualification;
+        protected global::System.Web.UI.WebControls.TextBox txtExperience;
+        protected global::System.Web.UI.WebControls.TextBox txtExperienceIn;
+        protected global::System.Web.UI.WebControls.Button btnAddEmployee;
+        protected global::System.Web.UI.WebControls.DropDownList ddlImportCat;
+        protected global::System.Web.UI.WebControls.FileUpload fileCSV;
+        protected global::System.Web.UI.WebControls.HiddenField hfImportData;
+        protected global::System.Web.UI.WebControls.Button btnImport;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDeleteEmployee;
+        protected global::System.Web.UI.WebControls.Button btnConfirmDelete;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFilter;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFilterDiv;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFilterStatus;
+        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.LinkButton btnSearch;
+        protected global::System.Web.UI.WebControls.GridView gvEmployees;
+
+        protected global::System.Web.UI.WebControls.HiddenField hfEditOldID;
+        protected global::System.Web.UI.WebControls.HiddenField hfResignedEmployeesJson;
+        protected global::System.Web.UI.WebControls.Button btnCancelEdit;
+        protected global::System.Web.UI.WebControls.LinkButton btnTabActive;
+        protected global::System.Web.UI.WebControls.LinkButton btnTabResigned;
+        protected global::System.Web.UI.WebControls.HiddenField hfActiveTab;
+        protected global::System.Web.UI.WebControls.HiddenField hfChangeCategory;
+        protected global::System.Web.UI.WebControls.HiddenField hfChangeDate;
+        protected global::System.Web.UI.WebControls.HiddenField hfChangeEmpId;
+        protected global::System.Web.UI.WebControls.HiddenField hfChangeDivision;
+        protected global::System.Web.UI.WebControls.LinkButton btnHiddenEditTrigger;
+        protected global::System.Web.UI.WebControls.HiddenField hfHiddenEditMasterId;
+        protected global::System.Web.UI.WebControls.DropDownList ddlBulkLeaveCategory;
+        protected global::System.Web.UI.WebControls.DropDownList ddlBulkLeaveDivision;
+        protected global::System.Web.UI.WebControls.TextBox txtBulkLeaveAmount;
+        protected global::System.Web.UI.WebControls.TextBox txtBulkLeaveDate;
+        protected global::System.Web.UI.WebControls.TextBox txtBulkLeaveRemarks;
+        protected global::System.Web.UI.WebControls.Button btnSubmitBulkLeave;
+        protected global::System.Web.UI.WebControls.Button btnResetBulkLeave;
+    }
+}

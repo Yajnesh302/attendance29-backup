@@ -1,0 +1,203 @@
+Your current system treats an employee as a single static record. The new features require treating an employee as a timeline of events — who they worked for, what category they were in, and whether any of that changed over time.
+The core challenge is: the same physical person can appear across multiple contracts, categories, and vendors, with a full traceable history.
+
+New Concepts to Model
+Before touching code, here are the three new entities you need:
+
+Vendor / Contract Company — the firm that supplies workers
+Contract — a time-bounded agreement between the plant and a vendor for a specific category
+Employee Engagement — a specific employee's tenure under a specific contract (their "chapter")
+
+
+New Database Schema
+Here is the complete addition to your AttendanceDB:
+sql-- ─────────────────────────────────────────
+-- VENDORS
+-- ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS Vendors (
+    Id          INT AUTO_INCREMENT PRIMARY KEY,
+    Name        VARCHAR(150) NOT NULL UNIQUE,
+    ContactName VARCHAR(100),
+    ContactPhone VARCHAR(20),
+    Address     TEXT,
+    IsActive    BOOLEAN DEFAULT TRUE
+);
+
+-- ─────────────────────────────────────────
+-- CONTRACTS
+-- A vendor wins a bid for a specific category
+-- for a specific period. One vendor can have
+-- multiple contracts (different periods or categories).
+-- ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS Contracts (
+    Id          INT AUTO_INCREMENT PRIMARY KEY,
+    VendorId    INT NOT NULL,
+    Category    VARCHAR(50) NOT NULL,   -- Skilled / Semi-Skilled / Unskilled
+    StartDate   DATE NOT NULL,
+    EndDate     DATE,                   -- NULL = still active
+    Notes       TEXT,
+    FOREIGN KEY (VendorId) REFERENCES Vendors(Id)
+);
+
+-- ─────────────────────────────────────────
+-- EMPLOYEE ENGAGEMENTS
+-- Every time an employee starts a new "chapter"
+-- (new contract, new category, new vendor) a row
+-- is inserted here. This is the full history.
+-- ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS EmployeeEngagements (
+    Id              INT AUTO_INCREMENT PRIMARY KEY,
+    EmpID           VARCHAR(50) NOT NULL,   -- links to Employees.ID
+    ContractId      INT NOT NULL,           -- which contract/vendor
+    Category        VARCHAR(50) NOT NULL,   -- category AT THIS TIME
+    Department      VARCHAR(100),
+    StartDate       DATE NOT NULL,          -- when this chapter began
+    EndDate         DATE,                   -- NULL = current chapter
+    EndReason       VARCHAR(50),
+    -- EndReason values:
+    --   'Resigned'   - employee left
+    --   'Upgraded'   - moved to higher category
+    --   'Downgraded' - moved to lower category
+    --   'ContractEnd'- contract expired, may rejoin under new contract
+    --   'Transferred'- moved to different department/division
+    FOREIGN KEY (ContractId) REFERENCES Contracts(Id)
+);
+
+-- ─────────────────────────────────────────
+-- MODIFY EMPLOYEES TABLE
+-- The Employees table becomes the MASTER IDENTITY
+-- record only. Category, vendor, status are now
+-- derived from EmployeeEngagements.
+-- Add VendorId just for quick "current vendor" lookup.
+-- ─────────────────────────────────────────
+ALTER TABLE Employees
+    ADD COLUMN CurrentEngagementId INT NULL,
+    ADD COLUMN OriginalJoinDate DATE NULL;
+-- OriginalJoinDate = the very first time they ever joined
+-- JoinDate stays as the current engagement's start (for attendance logic)
+
+How the Data Flows — Key Scenarios
+Scenario 1: New Employee Joins
+1. INSERT into Employees (master identity record)
+2. INSERT into EmployeeEngagements (StartDate, ContractId, Category, EndDate=NULL)
+3. UPDATE Employees.CurrentEngagementId = new engagement ID
+Scenario 2: Employee Upgrades (Semi-Skilled → Skilled)
+1. UPDATE EmployeeEngagements SET EndDate=today, EndReason='Upgraded'
+   WHERE Id = Employees.CurrentEngagementId
+2. Find the active Contract for 'Skilled' category
+3. INSERT new EmployeeEngagements row (new ContractId, Category='Skilled', StartDate=today)
+4. UPDATE Employees.CurrentEngagementId = new engagement ID
+5. UPDATE Employees.Category = 'Skilled'  (for fast reads)
+6. UPDATE Employees.JoinDate = today       (so attendance Saturday logic works correctly)
+Scenario 3: Employee Resigns
+1. UPDATE EmployeeEngagements SET EndDate=today, EndReason='Resigned'
+2. UPDATE Employees.Status='Resigned', ResignDate=today
+Scenario 4: Contract Ends, Same Employee Rejoins Under New Vendor
+1. UPDATE old EmployeeEngagements SET EndDate=contractEnd, EndReason='ContractEnd'
+2. UPDATE old Contract SET EndDate=contractEnd
+3. INSERT new Contract for new vendor
+4. INSERT new EmployeeEngagements (new ContractId, StartDate=newStart)
+5. UPDATE Employees.CurrentEngagementId, JoinDate=newStart
+   (Status stays 'Active', ResignDate stays NULL)
+
+Modified Application Structure
+Here's the full file/page structure you'll need:
+/AttendanceApp/
+│
+├── (existing pages — unchanged)
+│   ├── Login.aspx
+│   ├── Dashboard.aspx
+│   ├── Attendance.aspx
+│   ├── Ledger.aspx
+│   ├── Calculation.aspx
+│   ├── Settings.aspx
+│   └── AdminManagement.aspx
+│
+├── (modified pages)
+│   └── Employee.aspx         ← Add upgrade/downgrade/resign actions
+│                               Add "View History" per employee
+│
+├── (NEW pages)
+│   ├── Vendors.aspx          ← CRUD for vendor master list
+│   ├── Contracts.aspx        ← Manage contracts per vendor/category/period
+│   └── EmployeeHistory.aspx  ← Full timeline view for one employee
+│
+└── Utils/
+    └── DBHelper.cs           ← Add new query methods
+
+What Each New Page Does
+Vendors.aspx
+
+List all vendors with their active/inactive status
+Add / Edit / Deactivate a vendor
+Show summary: how many employees currently under this vendor, how many contracts
+
+Contracts.aspx
+
+List contracts filtered by vendor or category or date range
+Add a new contract (vendor + category + start date)
+Close a contract (set end date)
+Show: total employees who joined under this contract, how many resigned during it, how many are still active
+
+EmployeeHistory.aspx
+
+Takes an EmpID parameter
+Shows a chronological timeline:
+
+[2022-01-01] Joined as Semi-Skilled under Vendor A in D-KRM
+[2023-06-15] Upgraded to Skilled → now under Vendor B in D-KRM
+[2024-03-01] Contract ended, rejoined under Vendor C
+[2025-01-10] Resigned
+
+
+Each row links to the relevant Contract
+
+Employee.aspx (modified)
+Add three new action buttons per employee row:
+
+Upgrade/Downgrade → opens modal to select new category + effective date
+Resign → sets resign date
+View History → navigates to EmployeeHistory.aspx?EmpID=xxx
+
+
+Key Logic Changes in Existing Code
+Attendance.aspx.cs
+The Saturday cut logic uses JoinDate and ResignDate from Employees. This does not need to change — because when an employee upgrades, you update Employees.JoinDate to the new engagement start. So the attendance window is automatically correct per engagement period.
+However, for wage calculation you'll need to be aware: if an employee was Skilled for part of the month and Unskilled for another part, you'll need to split the wage calculation. This is an edge case — confirm with your business rules whether category changes are effective from the start of the next month (simpler) or mid-month (complex).
+Calculation.aspx.cs
+Currently it reads Employees.Category to determine wage rate. This is still fine as long as Employees.Category always reflects the current category (which it will, since you update it on upgrade/downgrade).
+DBHelper.cs
+Add these new query methods:
+csharp// Get full history for one employee
+GetEmployeeEngagements(string empId)
+
+// Get all employees under a contract
+GetEmployeesByContract(int contractId)
+
+// Get active contract for a given category
+GetActiveContractByCategory(string category)
+
+// Close an engagement and start a new one (transaction)
+TransferEmployeeToNewCategory(string empId, string newCategory, DateTime effectiveDate)
+
+// Get vendor summary stats
+GetVendorStats(int vendorId)
+
+Oracle Compatibility Note
+Since you're moving to Oracle later, keep these in mind now so migration is easier:
+MySQLOracle equivalentAUTO_INCREMENTGENERATED ALWAYS AS IDENTITYBOOLEANNUMBER(1) with 0/1TEXTCLOB or VARCHAR2(4000)IF NOT EXISTS in CREATENot supported; wrap in exception blocksBacktick identifiersUse double quotes
+Your DBHelper.cs already abstracts queries well — when migrating, you'll mainly change the connection string and swap MySqlConnection for OracleConnection. Keeping all SQL in DBHelper.cs (not scattered in page code-behind) will make this migration much less painful.
+
+Summary of What to Build, In Order
+
+Database first — Run the new ALTER TABLE and CREATE TABLE statements above
+Vendors.aspx — Simple CRUD, no complex logic
+Contracts.aspx — CRUD + link to vendor
+Modify Employee.aspx — Add the upgrade/downgrade/resign actions with the engagement transaction logic
+EmployeeHistory.aspx — Read-only timeline view, JOINing Engagements + Contracts + Vendors
+Modify Calculation.aspx — Handle mid-month category changes if required by your business rules
+Update Dashboard.aspx — Add vendor/contract summary cards
+
+
+
+ALTER TABLE ContractPeriods ADD DatedOn DATE;

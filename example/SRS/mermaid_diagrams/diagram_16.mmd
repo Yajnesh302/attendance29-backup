@@ -1,0 +1,26 @@
+graph TD
+    ATTENDANCE_APP["AttendanceApp/"] --> AGENTS[".agents/"]
+    ATTENDANCE_APP --> VS[".vs/"]
+    ATTENDANCE_APP --> PROPERTIES["Properties/"]
+    ATTENDANCE_APP --> STATIC["Static/"]
+    ATTENDANCE_APP --> UTILS["Utils/"]
+    ATTENDANCE_APP --> BIN["bin/"]
+    ATTENDANCE_APP --> EXAMPLE["example/"]
+    ATTENDANCE_APP --> PACKAGES["packages/"]
+    ATTENDANCE_APP --> ASPX_FILES["*.aspx (Web Forms)"]
+    ATTENDANCE_APP --> CS_FILES["*.aspx.cs (Code-behind)"]
+    ATTENDANCE_APP --> DESIGNER["*.aspx.designer.cs"]
+    ATTENDANCE_APP --> MASTER["Site.Master"]
+    ATTENDANCE_APP --> CONFIG["Web.config"]
+    ATTENDANCE_APP --> PROJECT["AttendanceApp.csproj"]
+    ATTENDANCE_APP --> DB_SETUP["oracle_setup.sql"]
+
+    STATIC --> CSS["css/bootstrap.min.css"]
+    STATIC --> JS["js/angular.min.js<br/>js/xlsx.full.min.js"]
+    STATIC --> FONTAWESOME["fontawesome-free/"]
+
+    UTILS --> AD_HELPER["ADHelper.cs<br/>(LDAP Auth)"]
+    UTILS --> DB_HELPER["DBHelper.cs<br/>(DB Connection)"]
+    UTILS --> ACTION_LOGGER["ActionLogger.cs<br/>(Audit/Undo)"]
+
+    EXAMPLE --> DB_DOC["database_documentation.md"]

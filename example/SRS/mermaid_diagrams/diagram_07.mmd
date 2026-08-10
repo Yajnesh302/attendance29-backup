@@ -1,0 +1,28 @@
+flowchart LR
+    subgraph INPUT["Input Data"]
+        ATT["Attendance Records<br/>(Present/Absent/Leave/Holiday)"]
+        RATES["Wage Rates<br/>(Per Category Per Month)"]
+        GLOBAL["Global Adjustments<br/>(General + Category-specific)"]
+        OVERRIDES["Manual Overrides<br/>(Per Employee)"]
+    end
+    
+    subgraph PROCESS["Calculation Process"]
+        STEP1["Auto-calculate Present Days<br/>(per attendance marking logic)"]
+        STEP2["+ Global Adjustments"]
+        STEP3["Apply Manual Override<br/>(if exists, FinalDays)"]
+        STEP4["Compute Total Wage<br/>= FinalDays × WageRate"]
+    end
+    
+    subgraph OUTPUT["Output"]
+        GRID["Calculation Grid<br/>(Employee-wise)"]
+        DOCS["Documents<br/>(Certificates, Reports)"]
+    end
+    
+    ATT --> STEP1
+    RATES --> STEP4
+    GLOBAL --> STEP2
+    STEP1 --> STEP2
+    STEP2 --> STEP3
+    STEP3 --> STEP4
+    STEP4 --> GRID
+    STEP4 --> DOCS

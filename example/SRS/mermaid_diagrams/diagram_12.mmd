@@ -1,0 +1,31 @@
+erDiagram
+    AppUsers ||--o{ UserDivisions : "has"
+    Divisions ||--o{ UserDivisions : "assigned to"
+    Divisions ||--o{ Employees : "belongs to"
+
+    Categories ||--o{ ContractPeriods : "governs"
+    Vendors ||--o{ ContractPeriods : "holds"
+    Vendors ||--o{ ContractPeriodVendors : "listed in"
+    ContractPeriods ||--o{ ContractPeriodVendors : "includes"
+    ContractPeriods ||--o{ ContractExtensions : "extends"
+
+    Employees ||--o{ EmployeeEngagements : "has stints"
+    ContractPeriods ||--o{ EmployeeEngagements : "under"
+    Vendors ||--o{ EmployeeEngagements : "supplies"
+
+    Employees ||--o| EmployeeEngagements : "CurrentEngagementId"
+
+    Employees ||--o{ Attendance : "has records"
+    EmployeeEngagements ||--o{ Attendance : "associated"
+    ContractPeriods ||--o{ Attendance : "associated"
+
+    Employees ||--o{ CalculationOverrides : "override for"
+    EmployeeEngagements ||--o{ CalculationOverrides : "engagement"
+    ContractPeriods ||--o{ CalculationOverrides : "contract"
+
+    Employees ||--o{ EmployeeActionLogs : "audited"
+    Employees ||--o{ EmployeeLeaveCredits : "credits"
+    AppUsers ||--o{ AttendanceRemarks : "submits"
+    Employees ||--o{ AttendanceRemarks : "about"
+
+    EmployeeEngagements ||--o{ EmployeeEngagements : "PrevEngagementId (self-ref)"

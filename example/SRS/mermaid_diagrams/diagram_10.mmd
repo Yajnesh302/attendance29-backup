@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph USER_MGMT["User Role Management"]
+        USERS["AppUsers Table"] --> ADMIN_CREATE["Create Admin<br/>(Role = 1)"]
+        USERS --> USER_CREATE["Create Regular User<br/>(Role = 0)"]
+        
+        ADMIN_CREATE --> ADMIN_REVOKE["Revoke Admin<br/>(Role = 2)"]
+        USER_CREATE --> USER_REVOKE["Revoke User<br/>(Role = 3)"]
+        
+        ADMIN_REVOKE --> ADMIN_RESTORE["Restore Admin<br/>(Role = 1)"]
+        USER_REVOKE --> USER_RESTORE["Restore User<br/>(Role = 0)"]
+        
+        ADMIN_CREATE -.->|"Deleted"| REMOVED["Permanently Deleted"]
+        USER_CREATE -.->|"Deleted"| REMOVED
+    end
+    
+    subgraph DIV_ACCESS["Division Access Control"]
+        USER_CREATE --> ASSIGN["Assign Divisions<br/>via UserDivisions table"]
+        ASSIGN --> RESTRICTED["User can only see<br/>assigned divisions' data"]
+    end

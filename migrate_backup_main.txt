@@ -1,0 +1,185 @@
+﻿def ask(prompt, default=None):
+    """Ask user a question, return their answer (or default if they press Enter)."""
+    if default is not None:
+        full_prompt = "{} [{}]: ".format(prompt, default)
+    else:
+        full_prompt = "{}: ".format(prompt)
+    try:
+        answer = raw_input(full_prompt)  # Python 2
+    except NameError:
+        answer = input(full_prompt)      # Python 3
+    return answer.strip() if answer.strip() else default
+
+def ask_yes_no(prompt, default=True):
+    """Ask a yes/no question."""
+    hint = "Y/n" if default else "y/N"
+    try:
+        answer = raw_input("{} [{}]: ".format(prompt, hint))
+    except NameError:
+        answer = input("{} [{}]: ".format(prompt, hint))
+    answer = answer.strip().lower()
+    if not answer:
+        return default
+    return answer in ("y", "yes")
+
+def gather_migration_options(raw):
+    """Interactively ask the user for migration settings."""
+    opts = {}
+
+    print("\n" + "=" * 60)
+    print("  BACKUP MIGRATION SETUP")
+    print("=" * 60)
+
+    # --- AppUsers summary ---
+    raw_u = ci_get(raw, "AppUsers") or []
+    admin_users = []
+    for u in raw_u:
+        try: r = int(ci_get(u, "Role") or ci_get(u, "ROLE") or 0)
+        except: r = 0
+        if r == 1:
+            admin_users.append(u)
+
+    if admin_users:
+        print("\nAdmin users found in backup:")
+        for u in admin_users:
+            print("  PCNO={} | Name={}".format(ci_get(u,"PCNO") or "", ci_get(u,"Name") or ci_get(u,"NAME") or ""))
+    else:
+        print("\nNo admin users (Role=1) found in backup.")
+
+    # --- Check if old Categories exist ---
+    raw_cats = ci_get(raw, "Categories") or []
+    has_old_cats = bool(raw_cats)
+    has_new_mc   = bool(ci_get(raw, "MainCategory") or [])
+    has_new_tiers = bool(ci_get(raw, "Tiers") or [])
+
+    if has_new_mc and has_new_tiers:
+        print("\nBackup already has new-schema MainCategory & Tiers.")
+        print("No tier/category migration questions needed.")
+        opts["skip_category_setup"] = True
+        return opts
+
+    opts["skip_category_setup"] = False
+
+    # --- MainCategory Name ---
+    print("\n--- MainCategory Setup ---")
+    print("All employees need to belong to a MainCategory (e.g. 'Contract Wages').")
+    mc_name = ask("Enter MainCategory name", "Contract Wages")
+    opts["main_category_name"] = mc_name
+
+    # --- AdminPCNO for MainCategory ---
+    print("\n--- MainCategory Admin ---")
+    if admin_users:
+        default_admin = ci_get(admin_users[0], "PCNO") or ""
+        print("Which admin user owns this MainCategory?")
+        for i, u in enumerate(admin_users):
+            print("  [{}] PCNO={} | {}".format(i+1, ci_get(u,"PCNO") or "", ci_get(u,"Name") or ci_get(u,"NAME") or ""))
+        choice = ask("Enter number or type a PCNO directly", default_admin)
+        try:
+            idx = int(choice) - 1
+            if 0 <= idx < len(admin_users):
+                opts["admin_pcno"] = ci_get(admin_users[idx], "PCNO") or default_admin
+            else:
+                opts["admin_pcno"] = choice
+        except (ValueError, TypeError):
+            opts["admin_pcno"] = choice if choice else default_admin
+    else:
+        opts["admin_pcno"] = ask("Enter admin PCNO to own this MainCategory", "1001")
+
+    # --- Tiers (from old Categories or custom) ---
+    print("\n--- Tier (Category) Setup ---")
+    if has_old_cats:
+        print("Old Categories found in backup:")
+        for c in raw_cats:
+            cid   = ci_get(c, "Id") or ci_get(c, "ID") or "?"
+            cname = ci_get(c, "Name") or ci_get(c, "NAME") or "?"
+            print("  ID={} | Name={}".format(cid, cname))
+        use_old = ask_yes_no("Use these as Tiers (mapped under the new MainCategory)?", True)
+        opts["use_old_categories_as_tiers"] = use_old
+        if use_old:
+            # Allow renaming each tier
+            custom_tiers = []
+            print("You can rename each tier or press Enter to keep original name:")
+            idx = 1
+            for c in raw_cats:
+                cid   = ci_get(c, "Id") or ci_get(c, "ID")
+                try: cid = int(cid)
+                except: cid = idx
+                cname = (ci_get(c, "Name") or ci_get(c, "NAME") or "Category_{}".format(cid)).strip()
+                new_name = ask("  Tier name for '{}' (ID={})".format(cname, cid), cname)
+                custom_tiers.append({"id": cid, "name": new_name, "sort": idx})
+                idx += 1
+            opts["custom_tiers"] = custom_tiers
+        else:
+            opts = _ask_custom_tiers(opts)
+    else:
+        print("No old Categories found. Define tiers manually.")
+        print("Default tiers: Skilled (1), Semi-Skilled (2), Unskilled (3)")
+        use_defaults = ask_yes_no("Use default tiers?", True)
+        if use_defaults:
+            opts["custom_tiers"] = [
+                {"id": 1, "name": "Skilled",      "sort": 1},
+                {"id": 2, "name": "Semi-Skilled",  "sort": 2},
+                {"id": 3, "name": "Unskilled",     "sort": 3},
+            ]
+        else:
+            opts = _ask_custom_tiers(opts)
+
+    print("\n" + "=" * 60)
+    print("  Migration will use:")
+    print("  MainCategory : {}".format(opts.get("main_category_name", "Contract Wages")))
+    print("  Admin PCNO   : {}".format(opts.get("admin_pcno", "?")))
+    for t in opts.get("custom_tiers", []):
+        print("  Tier {:>2}      : {}".format(t["id"], t["name"]))
+    print("=" * 60)
+    confirm = ask_yes_no("\nProceed with migration?", True)
+    if not confirm:
+        print("Migration cancelled.")
+        sys.exit(0)
+
+    return opts
+
+
+def _ask_custom_tiers(opts):
+    """Ask user to define tiers manually."""
+    print("Enter tier names (press Enter with empty name to finish, minimum 1 tier):")
+    custom_tiers = []
+    idx = 1
+    while True:
+        name = ask("  Tier {} name".format(idx), None if custom_tiers else "Skilled")
+        if not name:
+            if not custom_tiers:
+                print("  At least one tier required.")
+                continue
+            break
+        custom_tiers.append({"id": idx, "name": name, "sort": idx})
+        idx += 1
+    opts["custom_tiers"] = custom_tiers
+    return opts
+
+
+def main():
+    if len(sys.argv)<2: print("Usage: python migrate_backup.py input.json [output.json]"); sys.exit(1)
+    inp=sys.argv[1]
+    outp=sys.argv[2] if len(sys.argv)>=3 else os.path.splitext(inp)[0]+"_migrated"+os.path.splitext(inp)[1]
+    if not os.path.exists(inp): print("ERROR: Not found: {}".format(inp)); sys.exit(1)
+    print("Loading: "+inp)
+    raw=load_json(inp)
+
+    # Gather interactive options
+    opts = gather_migration_options(raw)
+
+    print("\nMigrating...")
+    result,warns=migrate(raw, opts)
+    if warns:
+        print("\n"+"="*60+"\n  WARNINGS ({}):\n".format(len(warns))+"="*60)
+        for w in warns: print("  [!] "+w)
+        print("="*60)
+    else: print("No warnings - clean migration!")
+    save_json(result,outp)
+    print("\nTable rows:")
+    for t,r in result.items():
+        if isinstance(r,list): print("  {:<30} {:>5}".format(t,len(r)))
+    print("\nSaved: "+outp)
+    print("Done! Restore via Settings -> Restore Database Backup.")
+
+if __name__=="__main__": main()

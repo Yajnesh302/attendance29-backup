@@ -1,0 +1,33 @@
+flowchart TD
+    FOR_EACH["For Each Day (d) of Month<br/>For Each Employee"] --> ENG_CHECK{"Is employee within<br/>engagement period?"}
+    
+    ENG_CHECK -->|No| SKIP[Skip day - not counted]
+    ENG_CHECK -->|Yes| SUNDAY_CHECK{"Is it a Sunday?"}
+    
+    SUNDAY_CHECK -->|Yes & Not Holiday| SKIP
+    SUNDAY_CHECK -->|Yes but Holiday| COUNT_HOLIDAY
+    SUNDAY_CHECK -->|No| HOLIDAY_CHECK{"Is it marked<br/>as Holiday?"}
+    
+    HOLIDAY_CHECK -->|Yes| COUNT_HOLIDAY["Count: +1.0 (Holiday)"]
+    HOLIDAY_CHECK -->|No| STATUS_CHECK{"What is the<br/>StatusValue & LeaveType?"}
+    
+    STATUS_CHECK -->|"StatusValue = 1 (Present)"| COUNT_1["+1.0"]
+    STATUS_CHECK -->|"StatusValue = 0.5 (Half-Day)"| COUNT_05["+0.5"]
+    STATUS_CHECK -->|"StatusValue = 0, LeaveType = Paid"| COUNT_1
+    STATUS_CHECK -->|"StatusValue = 0, LeaveType = Unpaid"| COUNT_0["+0.0"]
+    STATUS_CHECK -->|"LeaveType = Carried"| COUNT_1
+    STATUS_CHECK -->|"LeaveType = Paired Paid"| COUNT_1
+    STATUS_CHECK -->|"LeaveType = Paired Unpaid"| COUNT_0
+    STATUS_CHECK -->|"StatusValue = 0 (Absent, no leave)"| COUNT_0
+    
+    COUNT_HOLIDAY --> NEXT_DAY
+    COUNT_1 --> NEXT_DAY
+    COUNT_05 --> NEXT_DAY
+    COUNT_0 --> NEXT_DAY
+    SKIP --> NEXT_DAY
+    
+    NEXT_DAY["Next Day"] --> FOR_EACH
+    
+    FOR_EACH -.->|After all days processed| APPLY_GLOBAL["+ Global Adjustments<br/>(general + category-specific)"]
+    APPLY_GLOBAL --> APPLY_OVERRIDE["Apply Calculation Override<br/>(if exists, replace value)"]
+    APPLY_OVERRIDE --> RESULT["Result: Final Present Days<br/>for Wage Calculation"]

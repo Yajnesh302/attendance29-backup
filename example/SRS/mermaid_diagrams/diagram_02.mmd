@@ -1,0 +1,15 @@
+flowchart TD
+    START([User submits PCNO + Password]) --> AD_AUTH[ADHelper.AuthenticateAndGetPCNO<br/>LDAP bind + search for EmployeeID]
+    AD_AUTH -->|Authentication Failed| ERROR1[Show Error: Invalid Credentials]
+    AD_AUTH -->|Success| QUERY_ROLE[Query AppUsers table for Role]
+    QUERY_ROLE --> ROLE_CHECK{Role Check}
+    ROLE_CHECK -->|Role = 2 or 3| DENIED[Show Access Denied Message]
+    ROLE_CHECK -->|Role = 1 or 0| QUERY_HR[Query hrdata.empdetails<br/>for Name, Designation, Division]
+    QUERY_HR -->|Found| SET_SESSION[Set Session variables]
+    QUERY_HR -->|Not Found| FALLBACK[Fall back to AppUsers name<br/>Use defaults for role/division]
+    FALLBACK --> SET_SESSION
+    SET_SESSION -->|Role = 0| LOAD_DIVS[Load UserDivisions<br/>for division access control]
+    SET_SESSION -->|Role = 1| REDIRECT[Redirect to Dashboard.aspx]
+    LOAD_DIVS --> REDIRECT
+    DENIED --> END([End])
+    ERROR1 --> END

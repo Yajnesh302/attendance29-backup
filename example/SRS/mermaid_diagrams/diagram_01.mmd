@@ -1,0 +1,29 @@
+graph TB
+    subgraph ORGANIZATION_INTRANET["ORGANIZATION INTRANET"]
+        HR_USER["HR Admin User<br/>(Full Access)"]
+        POC_USER["POC User<br/>(Division Only)"]
+
+        subgraph SYSTEM["ATTENDANCE & CONTRACT<br/>WORKFORCE MANAGEMENT SYSTEM"]
+            ATTENDANCE["Attendance<br/>Module"]
+            EMPLOYEE["Employee<br/>Master"]
+            CONTRACT["Contract<br/>Management"]
+            DOCUMENTS["Document<br/>Generation"]
+            CALC["Calculation<br/>Module"]
+            LEDGER["Ledger"]
+            ADMIN_MGMT["Admin<br/>Management"]
+            SETTINGS["Settings"]
+        end
+
+        subgraph DATABASE["ORACLE DATABASE 11g"]
+            HRDATA["HRDATA Schema<br/>(Company HR Data)<br/>- empdetails"]
+            APPDATA["SYSTEM Schema<br/>(Application Tables)<br/>- 20+ tables"]
+        end
+
+        AD_SERVER["ACTIVE DIRECTORY / LDAP<br/>(User Authentication)"]
+    end
+
+    HR_USER -->|HTTP/HTTPS| SYSTEM
+    POC_USER -->|HTTP/HTTPS| SYSTEM
+    SYSTEM --> DATABASE
+    AD_SERVER -.->|LDAP Bind| SYSTEM
+    HRDATA -.-|Read-only| SYSTEM

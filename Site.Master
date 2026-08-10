@@ -1,0 +1,1024 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="AttendanceApp.SiteMaster" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title><asp:ContentPlaceHolder ID="TitleContent" runat="server"></asp:ContentPlaceHolder> - Attendance System</title>
+    
+    <!-- Custom fonts for this template-->
+    <link href="Static/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
+    <!-- Custom styles for this template-->
+    <link href="Static/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="Static/css/dark-theme.css?v=<%=DateTime.Now.Ticks%>" rel="stylesheet" />
+
+    <style>
+        /* Tour Spotlight Spotlight styles */
+        .tour-active {
+            position: relative !important;
+            z-index: 1000001 !important;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65), 0 12px 30px rgba(79, 70, 229, 0.25) !important;
+            outline: 3px solid #4f46e5 !important;
+            outline-offset: 4px !important;
+            pointer-events: none !important;
+            transition: box-shadow 0.25s ease-out, outline 0.25s ease-out !important;
+        }
+
+        body { color: #111 !important; }
+        
+        /* Premium Page Headings Redesign */
+        h2 {
+            font-size: 1.625rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important; /* Slate 900 */
+            letter-spacing: -0.025em !important;
+            border-left: 5px solid #4f46e5 !important; /* Indigo accent border */
+            padding-left: 14px !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            line-height: 1.25 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+        }
+
+        .sticky-top {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1030 !important;
+        }
+        /* Sticky Top Nav for pages without sidebar */
+        body.sticky-nav-page .navbar-custom {
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            left: 0 !important;
+            z-index: 1030 !important;
+        }
+        body.sticky-nav-page .container-main {
+            margin-top: 60px !important; /* Offset by navbar height */
+        }
+        /* Ensure scrolling containers do not break sticky children */
+        #content-wrapper, #content, #wrapper {
+            overflow: visible !important;
+        }
+        .navbar-custom {
+            background: linear-gradient(90deg, #4f46e5 0%, #4338ca 50%, #3730a3 100%) !important;
+            height: 64px !important;
+            padding: 0 20px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.25) !important;
+            z-index: 1030 !important;
+        }
+
+        .navbar-custom .navbar-brand {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            letter-spacing: -0.02em !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 0 !important;
+        }
+
+        .brand-icon-box {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            color: #ffffff !important;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 7px 18px !important;
+            border-radius: 8px !important;
+            font-size: 0.85rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.2px !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+            transition: all 0.2s ease !important;
+            margin-right: 0 !important;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45) !important;
+        }
+
+        .container-main {
+            padding: 20px;
+            background-color: #f8f9fc;
+            min-height: calc(100vh - 64px);
+        }
+
+        .app-sidebar {
+            width: 260px !important;
+            background: linear-gradient(180deg, #4f46e5 0%, #4338ca 50%, #3730a3 100%) !important;
+            flex-shrink: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 4px 0 24px rgba(79, 70, 229, 0.2) !important;
+            min-height: 100vh !important;
+            z-index: 1020 !important;
+        }
+
+        .sidebar-profile {
+            padding: 22px 16px 20px !important;
+            text-align: center !important;
+        }
+
+        .sidebar-logo-card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 12px;
+            padding: 9px 16px;
+            display: inline-block;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar-logo-card:hover {
+            transform: scale(1.02);
+        }
+
+        .sidebar-avatar-ring {
+            display: inline-block;
+            padding: 4px;
+            background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 100%);
+            border-radius: 20px;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+            margin-bottom: 14px;
+            margin-top: 6px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .sidebar-avatar-ring:hover {
+            transform: scale(1.04);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-avatar {
+            width: 145px !important;
+            height: 185px !important;
+            border-radius: 17px !important;
+            border: none !important;
+            object-fit: cover !important;
+            display: block !important;
+        }
+
+        .sidebar-name {
+            color: #ffffff !important;
+            font-size: 1.05rem !important;
+            font-weight: 800 !important;
+            line-height: 1.35 !important;
+            letter-spacing: -0.01em !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .sidebar-designation {
+            font-size: 0.8rem !important;
+            color: #e0e7ff !important;
+            font-weight: 600 !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            padding: 3px 12px !important;
+            border-radius: 20px !important;
+            display: inline-block !important;
+            margin-top: 4px !important;
+            margin-bottom: 10px !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        }
+
+        .sidebar-role-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            font-size: 0.74rem !important;
+            font-weight: 800 !important;
+            padding: 4px 14px !important;
+            border-radius: 20px !important;
+            letter-spacing: 0.5px !important;
+            text-transform: uppercase !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .sidebar-divisions-box {
+            margin-top: 18px !important;
+            padding: 14px 12px !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .topbar-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.25);
+            margin: 0 14px;
+        }
+
+        .header-nav-links {
+            gap: 4px;
+        }
+
+        .header-nav-links .nav-link {
+            padding: 7px 14px !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            color: #e0e7ff !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease-in-out !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 7px !important;
+        }
+
+        .header-nav-links .nav-link:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .header-nav-links .nav-link.active,
+        .header-nav-links .nav-link.active-tab {
+            background: #ffffff !important;
+            border: 1px solid #ffffff !important;
+            color: #4f46e5 !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .user-welcome-badge {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .user-welcome-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #4f46e5;
+            font-size: 0.72rem;
+        }
+
+        /* ── Notification Bell ── */
+        .notif-bell-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 14px;
+        }
+        .notif-bell-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1.5px solid rgba(255,255,255,0.22);
+            color: white;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s, transform 0.2s;
+            position: relative;
+        }
+        .notif-bell-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.08);
+        }
+        #notifBadge {
+            position: absolute;
+            top: -4px; right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            min-width: 18px; height: 18px;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+            border: 2px solid #4f46e5;
+            animation: pulse-badge 1.8s infinite;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.18); }
+        }
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 340px;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(16px);
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(79,70,229,0.12);
+            z-index: 99999;
+            overflow: hidden;
+            display: none;
+            animation: dropIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .notif-dropdown.open { display: block; }
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .notif-drop-header {
+            background: linear-gradient(135deg,#4f46e5,#3730a3);
+            color: white; padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 700; font-size: 0.88rem;
+        }
+        .notif-drop-list { max-height: 280px; overflow-y: auto; }
+        .notif-drop-item {
+            padding: 11px 16px; border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s; cursor: default;
+        }
+        .notif-drop-item:hover { background: #f8fafc; }
+        .notif-drop-sender { font-weight: 700; color: #0f172a; font-size: 0.83rem; }
+        .notif-drop-detail { color: #64748b; font-size: 0.78rem; margin-top: 2px; }
+        .notif-drop-msg {
+            color: #475569; font-size: 0.8rem; margin-top: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .notif-drop-footer {
+            padding: 10px 16px; text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .notif-drop-footer a {
+            color: #4f46e5; font-weight: 700; font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .notif-drop-footer a:hover { text-decoration: underline; }
+        .notif-drop-empty { padding: 24px; text-align: center; color: #94a3b8; font-size: 0.88rem; }
+        
+        /* Global Elegant Toast Container at Top Right */
+        #toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 200000 !important;
+            pointer-events: none;
+        }
+        
+        .modern-toast {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border-radius: 12px;
+            padding: 14px 20px;
+            min-width: 320px;
+            max-width: 420px;
+            color: #1e293b;
+            font-size: 0.92rem;
+            font-weight: 600;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: auto;
+            border-left: 6px solid #64748b;
+        }
+        
+        .modern-toast.toast-show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .modern-toast.toast-hide {
+            transform: translateY(-20px) scale(0.9);
+            opacity: 0;
+        }
+        
+        .toast-icon {
+            font-size: 1.35rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Toast Alert States with Curated Color Accents */
+        .toast-success {
+            border-left-color: #10b981;
+            background: rgba(240, 253, 250, 0.95);
+        }
+        .toast-success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast-error {
+            border-left-color: #ef4444;
+            background: rgba(254, 242, 242, 0.95);
+        }
+        .toast-error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast-warning {
+            border-left-color: #f59e0b;
+            background: rgba(255, 251, 235, 0.95);
+        }
+        .toast-warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast-info {
+            border-left-color: #3b82f6;
+            background: rgba(239, 246, 255, 0.95);
+        }
+        .toast-info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 2px;
+            line-height: 1;
+            transition: color 0.15s ease;
+            margin-left: auto;
+        }
+        .toast-close-btn:hover {
+            color: #475569;
+        }
+    </style>
+    <script>
+        // FOUC Prevention: Apply theme class before paint (Light mode by default)
+        (function(){
+            var t = localStorage.getItem('app-theme');
+            if (t === 'dark') document.documentElement.classList.add('theme-dark');
+            else document.documentElement.classList.add('theme-light');
+        })();
+    </script>
+    <script>
+        // Global Upgraded Toast Notification System
+        function showToast(msg, type = 'info') {
+            let container = document.getElementById("toast-container");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toast-container";
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement("div");
+            toast.className = `modern-toast toast-${type}`;
+            
+            let iconClass = "fas fa-info-circle";
+            if (type === "success") iconClass = "fas fa-check-circle";
+            else if (type === "warning") iconClass = "fas fa-exclamation-triangle";
+            else if (type === "error") iconClass = "fas fa-times-circle";
+
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="${iconClass}"></i></div>
+                <div style="flex-grow: 1; padding-right: 8px;">${msg}</div>
+                <button type="button" class="toast-close-btn" onclick="this.parentElement.classList.remove('toast-show'); setTimeout(() => this.parentElement.remove(), 400);">&times;</button>
+            `;
+
+            container.appendChild(toast);
+            
+            // Trigger reflow to run transition
+            toast.offsetHeight;
+            toast.classList.add("toast-show");
+
+            // Auto dismiss
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.remove("toast-show");
+                    toast.classList.add("toast-hide");
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 400);
+                }
+            }, 4000);
+        }
+    </script>
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
+</head>
+<%
+    string bodyClass = "";
+    string rawUrl = Request.RawUrl.ToLower();
+    if (rawUrl.Contains("attendance.aspx")) {
+        bodyClass = "attendance-page";
+    } else if (rawUrl.Contains("dashboard.aspx") || rawUrl.Contains("dashboard")) {
+        bodyClass = "dashboard-page";
+    } else {
+        bodyClass = "sticky-nav-page";
+    }
+%>
+<body id="page-top" class="<%= bodyClass %>">
+    <form id="form1" runat="server" enctype="multipart/form-data">
+        <div id="wrapper" class="d-flex">
+            <!-- Sidebar -->
+            <asp:PlaceHolder ID="phSidebar" runat="server">
+                <div class="app-sidebar">
+                    <!-- Profile block -->
+                    <div class="sidebar-profile">
+                        <div class="sidebar-logo-container" style="text-align: center; margin-bottom: 16px;">
+                            <div class="sidebar-logo-card">
+                                <img src="Static/Images/newlrdelogo.png" alt="LRDE Logo" style="max-width: 110px; height: auto; display: block; margin: 0 auto;" />
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid rgba(255, 255, 255, 0.12); margin: 14px 0 16px;"></div>
+                        
+                        <div class="sidebar-avatar-ring">
+                            <img src="http://windflower.lrde.com/empphotos/Dsc_<%=Session["PCNO"]%>.jpg"
+                                  id="imgavtr" class="sidebar-avatar" alt="Avatar"
+                                  onerror="this.onerror=null; this.src='Static/Images/default_avatar.png';" />
+                        </div>
+
+                        <div class="sidebar-name">
+                            <%=Session["Name"] != null ? Session["Name"].ToString() : "User" %>
+                        </div>
+                        <% if (Session["Designation"] != null && !string.IsNullOrEmpty(Session["Designation"].ToString())) { %>
+                        <div class="sidebar-designation">
+                            <%=Session["Designation"].ToString() %>
+                        </div>
+                        <% } %>
+                        <div>
+                            <span class="sidebar-role-badge">
+                                <i id="myfw" runat="server" class="fas fa-user"></i>&nbsp;<label runat="server" id="lblUserName" style="margin-bottom:0;"></label>
+                            </span>
+                        </div>
+                        <% int sideRole = Convert.ToInt32(Session["Role"] ?? 0);
+                           if (sideRole == 0) { %>
+                        <!-- Accessible Divisions Card for Regular User (POC) -->
+                        <div class="sidebar-divisions-box">
+                            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #93c5fd; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-building" style="color: #60a5fa; font-size: 0.8rem;"></i> Accessible Divisions
+                            </div>
+                            <% if (UserAllowedDivisions != null && UserAllowedDivisions.Count > 0) { %>
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                    <% foreach (var div in UserAllowedDivisions) { %>
+                                        <span class="badge" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(37, 99, 235, 0.45)); color: #ffffff; border: 1px solid rgba(147, 197, 253, 0.4); font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                            <i class="fas fa-sitemap" style="font-size: 0.65rem; color: #bfdbfe;"></i> <%= div %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                            <% } else { %>
+                                <div style="font-size: 0.78rem; color: #cbd5e1; font-weight: 600; display: flex; align-items: center; gap: 6px; padding: 2px 0;">
+                                    <i class="fas fa-globe" style="color: #60a5fa;"></i> All Divisions Access
+                                </div>
+                            <% } %>
+
+                            <% if (UserAllowedCategories != null && UserAllowedCategories.Count > 0) { %>
+                            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #93c5fd; font-weight: 800; margin-top: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-tags" style="color: #60a5fa; font-size: 0.8rem;"></i> Accessible Categories
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                <% foreach (var cat in UserAllowedCategories) { %>
+                                    <span class="badge" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.45)); color: #ffffff; border: 1px solid rgba(167, 243, 208, 0.4); font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                        <i class="fas fa-layer-group" style="font-size: 0.65rem; color: #a7f3d0;"></i> <%= cat %>
+                                    </span>
+                                <% } %>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </asp:PlaceHolder>
+
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column flex-grow-1">
+                <!-- Main Content -->
+                <div id="content">
+                    <!-- Topbar -->
+                    <nav class="navbar navbar-expand navbar-light topbar <%= Request.RawUrl.ToLower().Contains("attendance.aspx") ? "static-top" : "sticky-top" %> navbar-custom">
+                        <span class="navbar-brand">
+                            <span class="brand-icon-box"><i class="fas fa-shield-alt"></i></span> HR System
+                        </span>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Top Navigation Links (visible only on non-dashboard pages) -->
+                        <asp:PlaceHolder ID="phTopNav" runat="server">
+                            <ul class="navbar-nav mr-auto align-items-center header-nav-links">
+                                <li class="nav-item">
+                                    <a class='<%= GetNavClass("Dashboard.aspx") %>' href="Dashboard.aspx"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                                </li>
+                                <asp:PlaceHolder ID="phEmployeeMaster" runat="server">
+                                    <li class="nav-item">
+                                        <a class='<%= GetNavClass("Employee.aspx") %>' href="Employee.aspx"><i class="fas fa-users"></i> Employee Master</a>
+                                    </li>
+                                </asp:PlaceHolder>
+                                <li class="nav-item">
+                                    <a class='<%= GetNavClass("Attendance.aspx") %>' href="Attendance.aspx"><i class="fas fa-calendar-check"></i> Attendance</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class='<%= GetNavClass("Ledger.aspx") %>' href="Ledger.aspx"><i class="fas fa-book"></i> Ledger</a>
+                                </li>
+                                <asp:PlaceHolder ID="phCalculation" runat="server">
+                                    <li class="nav-item">
+                                        <a class='<%= GetNavClass("Calculation.aspx") %>' href="Calculation.aspx"><i class="fas fa-calculator"></i> Calculation</a>
+                                    </li>
+                                </asp:PlaceHolder>
+                                <asp:PlaceHolder ID="phNavAdminLinks" runat="server">
+                                    <li class="nav-item">
+                                        <a class='<%= GetNavClass("Remarks.aspx") %>' href="Remarks.aspx"><i class="fas fa-inbox"></i> Remarks</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class='<%= GetNavClass("Documents.aspx") %>' href="Documents.aspx"><i class="fas fa-file-alt"></i> Documents</a>
+                                    </li>
+                                </asp:PlaceHolder>
+                            </ul>
+                        </asp:PlaceHolder>
+
+                        <!-- Topbar User Information -->
+                        <ul class="navbar-nav ml-auto align-items-center" style="gap: 10px;">
+                            <asp:PlaceHolder ID="phStartTour" runat="server">
+                                <li class="nav-item">
+                                    <button type="button" id="startTourBtn" class="theme-toggle-btn" onclick="triggerSiteTour()" title="Start Interactive Welcome Tour">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
+                                </li>
+                            </asp:PlaceHolder>
+                            <li class="nav-item">
+                                <button type="button" id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleAppTheme()" title="Toggle Dark/Light Mode">
+                                    <i class="fas fa-moon" id="themeIcon"></i>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <div class="user-welcome-badge">
+                                    <span class="user-welcome-icon"><i class="fas fa-user"></i></span>
+                                    <span>Welcome, <%=Session["Name"] %><%= Session["Designation"] != null && !string.IsNullOrEmpty(Session["Designation"].ToString()) ? " (" + Session["Designation"].ToString() + ")" : "" %></span>
+                                </div>
+                            </li>
+                            <%-- Notification bell (admin only) --%>
+                            <asp:PlaceHolder ID="phNotifBell" runat="server">
+                                <li class="nav-item">
+                                    <div class="notif-bell-wrap">
+                                        <button type="button" class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDrop(event)" title="Remarks Notifications">
+                                            <i class="fas fa-bell"></i>
+                                            <span id="notifBadge" style="<%= UnreadCount > 0 ? "" : "display:none;" %>"><%= UnreadCount %></span>
+                                        </button>
+                                        <div class="notif-dropdown" id="notifDropdown">
+                                            <div class="notif-drop-header">
+                                                <span><i class="fas fa-inbox mr-2"></i>Remarks Inbox</span>
+                                                <span id="notifUnreadLabel"><%= UnreadCount %> unread</span>
+                                            </div>
+                                            <div class="notif-drop-list" id="notifDropList">
+                                                <div class="notif-drop-empty"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+                                            </div>
+                                            <div class="notif-drop-footer">
+                                                <a href="Remarks.aspx"><i class="fas fa-external-link-alt mr-1"></i>View all in Remarks Inbox</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </asp:PlaceHolder>
+                            <li class="nav-item">
+                                <asp:Button ID="btnLogout" runat="server" Text="Logout" CssClass="btn-logout" OnClick="btnLogout_Click" OnClientClick="var _t=localStorage.getItem('app-theme'); localStorage.clear(); if(_t) localStorage.setItem('app-theme',_t); sessionStorage.clear();" CausesValidation="false" />
+                            </li>
+                        </ul>
+                    </nav>
+                    <!-- End of Topbar -->
+
+                    <!-- Begin Page Content -->
+                    <div class="container-main">
+                        <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+                    </div>
+                </div>
+                <!-- End of Main Content -->
+            </div>
+        </div>
+
+        <!-- Bootstrap core JavaScript-->
+        <script src="Static/jquery/jquery.min.js"></script>
+        <script src="Static/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <!-- Core plugin JavaScript-->
+        <script src="Static/jquery-easing/jquery.easing.min.js"></script>
+        <!-- Custom scripts for all pages-->
+        <script src="Static/js/sb-admin-2.min.js"></script>
+        <script src="Static/js/sweetalert2@11.js"></script>
+        <% int jsRole = Convert.ToInt32(Session["Role"] ?? 0);
+           if (jsRole == 1 || jsRole == 4) { %>
+        <script>
+            (function () {
+                var dropLoaded = false;
+
+                window.toggleNotifDrop = function (e) {
+                    e.stopPropagation();
+                    var drop = document.getElementById('notifDropdown');
+                    if (!drop) return;
+                    var isOpen = drop.classList.contains('open');
+                    if (isOpen) {
+                        drop.classList.remove('open');
+                    } else {
+                        drop.classList.add('open');
+                        if (!dropLoaded) { loadNotifDrop(); dropLoaded = true; }
+                    }
+                };
+
+                document.addEventListener('click', function (e) {
+                    var wrap = document.getElementById('notifBellBtn');
+                    var drop = document.getElementById('notifDropdown');
+                    if (drop && drop.classList.contains('open')) {
+                        if (!drop.contains(e.target) && e.target !== wrap && !wrap.contains(e.target)) {
+                            drop.classList.remove('open');
+                        }
+                    }
+                });
+
+                function loadNotifDrop() {
+                    fetch('Remarks.aspx/GetAllRemarks', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: '{}'
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var all = JSON.parse(data.d);
+                        var unread = all.filter(function (r) { return !r.IsRead; });
+                        var listEl = document.getElementById('notifDropList');
+                        var badge  = document.getElementById('notifBadge');
+                        var label  = document.getElementById('notifUnreadLabel');
+
+                        if (badge)  { badge.textContent = unread.length; badge.style.display = unread.length > 0 ? 'flex' : 'none'; }
+                        if (label)  { label.textContent = unread.length + ' unread'; }
+
+                        var preview = unread.slice(0, 5);
+                        if (preview.length === 0) {
+                            listEl.innerHTML = '<div class="notif-drop-empty"><i class="fas fa-check-circle" style="color:#10b981;"></i> No unread remarks</div>';
+                        } else {
+                            listEl.innerHTML = preview.map(function (r) {
+                                return '<div class="notif-drop-item">'
+                                    + '<div class="notif-drop-sender"><i class="fas fa-user mr-1" style="color:#4f46e5;"></i>' + esc(r.SenderName) + '</div>'
+                                    + '<div class="notif-drop-detail">Re: ' + esc(r.EmpName) + ' &bull; ' + esc(r.RemarkDateStr) + '</div>'
+                                    + '<div class="notif-drop-msg">' + esc(r.Message) + '</div>'
+                                    + '</div>';
+                            }).join('');
+                        }
+                    })
+                    .catch(function () {
+                        var listEl = document.getElementById('notifDropList');
+                        if (listEl) listEl.innerHTML = '<div class="notif-drop-empty">Failed to load.</div>';
+                    });
+                }
+
+                function esc(s) {
+                    if (!s) return '';
+                    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                }
+            })();
+        </script>
+        <% } %>
+        <script>
+            // Theme Toggle Function
+            function toggleAppTheme() {
+                var html = document.documentElement;
+                var icon = document.getElementById('themeIcon');
+                if (html.classList.contains('theme-dark')) {
+                    html.classList.remove('theme-dark');
+                    html.classList.add('theme-light');
+                    localStorage.setItem('app-theme', 'light');
+                    if (icon) { icon.className = 'fas fa-moon'; }
+                } else {
+                    html.classList.remove('theme-light');
+                    html.classList.add('theme-dark');
+                    localStorage.setItem('app-theme', 'dark');
+                    if (icon) { icon.className = 'fas fa-sun'; }
+                }
+            }
+            // Set correct icon on page load
+            (function() {
+                var icon = document.getElementById('themeIcon');
+                if (icon) {
+                    if (document.documentElement.classList.contains('theme-dark')) {
+                        icon.className = 'fas fa-sun';
+                    } else {
+                        icon.className = 'fas fa-moon';
+                    }
+                }
+            })();
+
+            // Interactive Welcome Tour System
+            function triggerSiteTour() {
+                if (window.location.pathname.indexOf('Dashboard.aspx') === -1) {
+                    window.location.href = 'Dashboard.aspx?startTour=true';
+                } else {
+                    startWelcomeTour();
+                }
+            }
+
+            var currentTourStep = 0;
+            var activeSteps = [];
+
+            function startWelcomeTour() {
+                endTour();
+
+                var tourSteps = [
+                    {
+                        selector: 'h2',
+                        title: "Welcome to the App!",
+                        text: "This is your primary dashboard. Let's do a quick walk-through of the main tools available."
+                    },
+                    {
+                        selector: 'a[href="Employee.aspx"]',
+                        title: "Employee Profiles",
+                        text: "Configure contract worker information, assign categories, and view worker records here."
+                    },
+                    {
+                        selector: 'a[href="Attendance.aspx"]',
+                        title: "Mark Daily Attendance",
+                        text: "Fill out monthly attendance grids, mark paid/unpaid leaves, and manage Saturday rules."
+                    },
+                    {
+                        selector: 'a[href="Ledger.aspx"]',
+                        title: "Leave Ledgers",
+                        text: "Review detailed leave ledgers and historical balances for each worker in compliance with guidelines."
+                    },
+                    {
+                        selector: 'a[href="Calculation.aspx"]',
+                        title: "Wage Calculation Grid",
+                        text: "Compute monthly employee basic wages, ESI, EPF capped distributions, service charges, and GST."
+                    },
+                    {
+                        selector: 'a[href="Documents.aspx"]',
+                        title: "Document & Templates Hub",
+                        text: "Manage global template structures, print covering letters, and export wages calculations."
+                    },
+                    {
+                        selector: 'a[href="AdminManagement.aspx"]',
+                        title: "Admin Management",
+                        text: "Assign administrator roles, manage system access, and configure directorate checklists for users."
+                    },
+                    {
+                        selector: 'a[href="Settings.aspx"]',
+                        title: "System Settings",
+                        text: "Configure master directorates, departments, categories, and core administrative definitions."
+                    },
+                    {
+                        selector: 'a[href="Remarks.aspx"]',
+                        title: "Remarks Inbox",
+                        text: "Review and approve leave, correction, and attendance remarks submitted by contract workers."
+                    },
+                    {
+                        selector: 'a[href="UserRemarks.aspx"]',
+                        title: "My Attendance Remarks",
+                        text: "Send remarks and request corrections for attendance logs directly to administrators."
+                    },
+                    {
+                        selector: '#themeToggleBtn',
+                        title: "Light & Dark Mode Toggle",
+                        text: "Click this sun/moon button to switch instantly between light and dark modes at any time."
+                    }
+                ];
+
+                activeSteps = tourSteps.filter(function(step) {
+                    var el = document.querySelector(step.selector);
+                    return el && (el.offsetWidth > 0 || el.offsetHeight > 0);
+                });
+
+                if (activeSteps.length === 0) return;
+
+                currentTourStep = 0;
+                renderTourStep();
+            }
+
+            function renderTourStep() {
+                var prevHighlight = document.querySelector('.tour-active');
+                if (prevHighlight) {
+                    prevHighlight.classList.remove('tour-active');
+                }
+
+                if (currentTourStep < 0 || currentTourStep >= activeSteps.length) {
+                    endTour();
+                    return;
+                }
+
+                var step = activeSteps[currentTourStep];
+                var targetEl = document.querySelector(step.selector);
+                if (!targetEl) return;
+
+                targetEl.classList.add('tour-active');
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                var tooltip = document.getElementById('tourTooltipPopover');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.id = 'tourTooltipPopover';
+                    tooltip.style.cssText = "position: absolute; display: none; background: var(--card-bg, white); color: var(--text-color, #1e293b); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 18px; width: 310px; z-index: 1000002; border-top: 4px solid #4f46e5; transition: all 0.2s ease-out; box-sizing: border-box;";
+                    document.body.appendChild(tooltip);
+                }
+
+                var closeHtml = '<span onclick="endTour()" onmouseover="this.style.color=\'#ef4444\'" onmouseout="this.style.color=\'#94a3b8\'" style="position: absolute; top: 12px; right: 12px; font-size: 0.85rem; color: #94a3b8; cursor: pointer; transition: color 0.15s;" title="Close Tour"><i class="fas fa-times"></i></span>';
+                var titleHtml = '<h6 style="font-weight: 800; color: #4f46e5; margin: 0 0 8px 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;"><i class="fas fa-magic"></i> ' + esc(step.title) + '</h6>';
+                var textHtml = '<p style="color: var(--text-muted, #64748b); font-size: 0.85rem; line-height: 1.5; margin: 0 0 16px 0;">' + esc(step.text) + '</p>';
+                var footerHtml = '<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color, #e2e8f0); padding-top: 12px; margin-top: 4px;">' +
+                    '<span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">' + (currentTourStep + 1) + ' of ' + activeSteps.length + '</span>' +
+                    '<div style="display: flex; gap: 8px;">' +
+                    (currentTourStep > 0 ? '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="prevTourStep()" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 6px;">Back</button>' : '') +
+                    '<button type="button" class="btn btn-sm btn-primary" onclick="nextTourStep()" style="padding: 3px 12px; font-size: 0.75rem; font-weight: 700; background-color: #4f46e5; border-color: #4f46e5; color: white; border-radius: 6px;">' + (currentTourStep === activeSteps.length - 1 ? 'Finish' : 'Next') + '</button>' +
+                    '</div></div>';
+
+                tooltip.innerHTML = closeHtml + titleHtml + textHtml + footerHtml;
+
+                setTimeout(function() {
+                    var rect = targetEl.getBoundingClientRect();
+                    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    var top = rect.bottom + scrollTop + 12;
+                    var left = rect.left + scrollLeft + (rect.width / 2) - 155;
+
+                    if (left < 10) left = 10;
+                    if (left + 310 > window.innerWidth) left = window.innerWidth - 320;
+                    if (rect.bottom + 200 > window.innerHeight) {
+                        top = rect.top + scrollTop - tooltip.offsetHeight - 12;
+                    }
+
+                    tooltip.style.top = top + 'px';
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.display = 'block';
+                }, 150);
+            }
+
+            function prevTourStep() {
+                if (currentTourStep > 0) {
+                    currentTourStep--;
+                    renderTourStep();
+                }
+            }
+
+            function nextTourStep() {
+                if (currentTourStep < activeSteps.length - 1) {
+                    currentTourStep++;
+                    renderTourStep();
+                } else {
+                    endTour();
+                }
+            }
+
+            function endTour() {
+                var prevHighlight = document.querySelector('.tour-active');
+                if (prevHighlight) {
+                    prevHighlight.classList.remove('tour-active');
+                }
+                var tooltip = document.getElementById('tourTooltipPopover');
+                if (tooltip) {
+                    tooltip.style.display = 'none';
+                }
+            }
+
+            function esc(s) {
+                if (!s) return '';
+                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
+
+            // Auto-trigger welcome tour on redirection check
+            (function() {
+                var urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('startTour') === 'true') {
+                    var cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+                    setTimeout(function() {
+                        startWelcomeTour();
+                    }, 500);
+                }
+            })();
+        </script>
+    </form>
+</body>
+</html>

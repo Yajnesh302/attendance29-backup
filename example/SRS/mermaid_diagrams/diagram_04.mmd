@@ -1,0 +1,21 @@
+flowchart LR
+    NEW["New Contract<br/>(Active)"] --> ENROLL["Step 1: Enroll Employees<br/>├─ Carry-over from prev contract<br/>├─ Register new employees<br/>└─ Set initial leave balances"]
+    ENROLL --> ACTIVE_PERIOD
+    
+    subgraph ACTIVE_PERIOD["Active Period (Typically 2 Years)"]
+        MONTHLY_ATT["Monthly Attendance Marking"]
+        MONTHLY_CALC["Monthly Wage Calculation"]
+        DOC_GEN["Document Generation"]
+        LEAVE_ADJ["Leave Balance Adjustments"]
+        
+        MONTHLY_ATT --> MONTHLY_CALC
+        MONTHLY_CALC --> DOC_GEN
+        MONTHLY_CALC --> LEAVE_ADJ
+    end
+    
+    ACTIVE_PERIOD -->|"Option A: Extend"| EXTEND["Extension<br/>ContractExtensions table<br/>OldEndDate → NewEndDate"]
+    ACTIVE_PERIOD -->|"Option B: Early Terminate"| TERMINATE["Early Termination<br/>Close all engagements<br/>EndReason = 'ContractEnd'"]
+    
+    EXTEND --> ACTIVE_PERIOD
+    TERMINATE --> CLOSED["Contract Closed<br/>(Status: Closed)"]
+    ACTIVE_PERIOD -->|Auto-Expire| CLOSED

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mermaid to High-Res PNG Converter</title>
+<script src="lib/mermaid.min.js"></script>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    h1 { grid-column: 1 / -1; text-align: center; color: #fff; margin-bottom: 10px; font-weight: 300; font-size: 28px; }
+    h1 small { font-size: 14px; color: #888; display: block; margin-top: 4px; }
+    .panel { background: #16213e; border-radius: 10px; padding: 16px; border: 1px solid #0f3460; }
+    .panel h2 { font-size: 16px; margin-bottom: 10px; color: #e94560; font-weight: 500; }
+    textarea { width: 100%; height: 400px; background: #0f0f23; color: #00ff88; border: 1px solid #0f3460; border-radius: 6px; padding: 12px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; resize: vertical; tab-size: 2; }
+    textarea:focus { outline: none; border-color: #e94560; }
+    .controls { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .controls label { font-size: 13px; color: #aaa; }
+    .controls input[type="range"] { width: 120px; accent-color: #e94560; }
+    .controls .scale-value { font-size: 14px; color: #e94560; font-weight: bold; min-width: 30px; }
+    select { background: #0f0f23; color: #e0e0e0; border: 1px solid #0f3460; border-radius: 4px; padding: 4px 8px; }
+    .btn { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: #e94560; color: #fff; }
+    .btn-primary:hover { background: #d63851; }
+    .btn-secondary { background: #0f3460; color: #fff; }
+    .btn-secondary:hover { background: #1a4a8a; }
+    .btn-success { background: #2ecc71; color: #fff; }
+    .btn-success:hover { background: #27ae60; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .preview-container { background: #0f0f23; border-radius: 6px; border: 1px solid #0f3460; min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 16px; position: relative; }
+    .preview-container svg { max-width: 100%; height: auto; }
+    .preview-container .placeholder { color: #555; text-align: center; font-size: 14px; }
+    .preview-container .error { color: #e94560; text-align: center; font-size: 14px; padding: 20px; }
+    .info { color: #888; font-size: 12px; margin-top: 8px; }
+    .examples { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .examples button { background: #0f3460; color: #aaa; border: 1px solid #1a4a8a; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+    .examples button:hover { background: #1a4a8a; color: #fff; }
+    .download-section { grid-column: 1 / -1; text-align: center; padding: 16px; background: #16213e; border-radius: 10px; border: 1px solid #0f3460; }
+    .download-section .btn { font-size: 16px; padding: 12px 40px; }
+    .file-size { color: #888; font-size: 13px; margin-top: 6px; }
+    .theme-selector { display: flex; gap: 10px; align-items: center; }
+    .theme-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+    .theme-btn:hover { transform: scale(1.15); }
+    .theme-btn.active { border-color: #e94560; }
+    .theme-btn.default { background: #f5f5f5; }
+    .theme-btn.dark { background: #1a1a2e; }
+    .theme-btn.forest { background: #2d5a27; }
+    .theme-btn.neutral { background: #b8b8b8; }
+    .bg-selector { display: flex; gap: 10px; align-items: center; }
+    .bg-btn { padding: 4px 12px; border-radius: 4px; border: 1px solid #0f3460; cursor: pointer; font-size: 12px; background: #0f0f23; color: #aaa; transition: all 0.2s; }
+    .bg-btn:hover { background: #1a4a8a; color: #fff; }
+    .bg-btn.active { border-color: #e94560; color: #fff; }
+    #progressBar { width: 100%; height: 3px; background: #0f3460; border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
+    #progressBar div { height: 100%; background: #e94560; width: 0%; border-radius: 2px; transition: width 0.3s; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Mermaid to High-Res PNG Converter
+    <small>Fully offline — uses local mermaid.min.js · Scale up to 5x for crystal-clear text</small>
+</h1>
+
+<div class="container">
+
+    <!-- Left Panel: Input -->
+    <div class="panel">
+        <h2>Mermaid Syntax</h2>
+        <textarea id="inputCode" placeholder="Enter your Mermaid diagram syntax here...">graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Process]
+    B -->|No| D[End]
+    C --> D</textarea>
+
+        <div class="controls">
+            <label>Scale:</label>
+            <input type="range" id="scaleSlider" min="1" max="5" step="0.5" value="3">
+            <span class="scale-value" id="scaleDisplay">3x</span>
+
+            <label>Theme:</label>
+            <div class="theme-selector">
+                <button class="theme-btn default active" data-theme="default" title="Default"></button>
+                <button class="theme-btn dark" data-theme="dark" title="Dark"></button>
+                <button class="theme-btn forest" data-theme="forest" title="Forest"></button>
+                <button class="theme-btn neutral" data-theme="neutral" title="Neutral"></button>
+            </div>
+
+            <label>Bg:</label>
+            <div class="bg-selector">
+                <span class="bg-btn active" data-bg="transparent">Transparent</span>
+                <span class="bg-btn" data-bg="white">White</span>
+            </div>
+        </div>
+
+        <div class="controls" style="margin-top: 8px;">
+            <button class="btn btn-primary" id="renderBtn">Render & Preview</button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <select id="widthSelect">
+                <option value="800">Width: 800px</option>
+                <option value="1200" selected>Width: 1200px</option>
+                <option value="1600">Width: 1600px</option>
+                <option value="2000">Width: 2000px</option>
+                <option value="2400">Width: 2400px</option>
+            </select>
+        </div>
+
+        <div class="examples">
+            <span style="color:#888;font-size:12px;line-height:28px;">Examples: </span>
+            <button data-example="1">Flowchart</button>
+            <button data-example="2">Sequence</button>
+            <button data-example="3">ER Diagram</button>
+            <button data-example="4">State Diagram</button>
+            <button data-example="5">Class Diagram</button>
+            <button data-example="6">Gantt</button>
+        </div>
+
+        <div id="progressBar"><div id="progressFill"></div></div>
+    </div>
+
+    <!-- Right Panel: Preview -->
+    <div class="panel">
+        <h2>Preview</h2>
+        <div class="preview-container" id="previewContainer">
+            <div class="placeholder">Click "Render & Preview" to generate the diagram</div>
+        </div>
+        <div class="info" id="statusInfo">Ready</div>
+    </div>
+
+    <!-- Download -->
+    <div class="download-section">
+        <button class="btn btn-success" id="downloadBtn" disabled>Download High-Resolution PNG</button>
+        <div class="file-size" id="fileSizeInfo"></div>
+    </div>
+
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    const inputCode = document.getElementById('inputCode');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const scaleDisplay = document.getElementById('scaleDisplay');
+    const renderBtn = document.getElementById('renderBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const previewContainer = document.getElementById('previewContainer');
+    const statusInfo = document.getElementById('statusInfo');
+    const widthSelect = document.getElementById('widthSelect');
+    const fileSizeInfo = document.getElementById('fileSizeInfo');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+
+    let currentSVGString = null;
+    let currentPNGBlob = null;
+    let currentTheme = 'default';
+    let currentBg = 'transparent';
+
+    // Theme buttons
+    document.querySelectorAll('.theme-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.theme-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            currentTheme = this.getAttribute('data-theme');
+        });
+    });
+
+    // Background buttons
+    document.querySelectorAll('.bg-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.bg-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            currentBg = this.getAttribute('data-bg');
+        });
+    });
+
+    // Scale slider
+    scaleSlider.addEventListener('input', function() {
+        scaleDisplay.textContent = this.value + 'x';
+    });
+
+    // Clear
+    clearBtn.addEventListener('click', function() {
+        inputCode.value = '';
+        previewContainer.innerHTML = '<div class="placeholder">Enter Mermaid syntax and click "Render & Preview"</div>';
+        statusInfo.textContent = 'Cleared';
+        downloadBtn.disabled = true;
+        fileSizeInfo.textContent = '';
+        currentSVGString = null;
+        currentPNGBlob = null;
+    });
+
+    // Examples
+    var examples = {
+        1: 'graph TD\n    A[Start] --> B{Is it working?}\n    B -->|Yes| C[Great!]\n    B -->|No| D[Fix it]\n    C --> E[Deploy]\n    D --> E\n    style A fill:#e94560,color:#fff\n    style C fill:#2ecc71,color:#fff\n    style D fill:#f39c12,color:#fff',
+        2: 'sequenceDiagram\n    participant User\n    participant System\n    participant DB\n    User->>System: Submit Request\n    System->>DB: Query Data\n    DB-->>System: Return Results\n    System-->>User: Show Response\n    Note over System,DB: Processing...',
+        3: 'erDiagram\n    CUSTOMER ||--o{ ORDER : places\n    ORDER ||--|{ LINE-ITEM : contains\n    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses',
+        4: 'stateDiagram-v2\n    [*] --> Idle\n    Idle --> Processing : Start\n    Processing --> Completed : Success\n    Processing --> Failed : Error\n    Failed --> Idle : Retry\n    Completed --> [*]',
+        5: 'classDiagram\n    class Animal {\n        +String name\n        +int age\n        +makeSound() void\n    }\n    class Dog {\n        +String breed\n        +fetch() void\n    }\n    class Cat {\n        +String color\n        +purr() void\n    }\n    Animal <|-- Dog\n    Animal <|-- Cat',
+        6: 'gantt\n    title Project Timeline\n    dateFormat  YYYY-MM-DD\n    section Phase 1\n    Design           :a1, 2024-01-01, 30d\n    Development      :a2, after a1, 45d\n    section Phase 2\n    Testing          :a3, after a2, 20d\n    Deployment       :a4, after a3, 10d'
+    };
+
+    document.querySelectorAll('[data-example]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var ex = examples[this.getAttribute('data-example')];
+            if (ex) { inputCode.value = ex; renderDiagram(); }
+        });
+    });
+
+    // Mermaid initialization
+    var mermaidInitialized = false;
+    function initMermaid() {
+        if (typeof mermaid === 'undefined') {
+            statusInfo.textContent = 'ERROR: mermaid.min.js not loaded. Place it in lib/mermaid.min.js';
+            renderBtn.disabled = true;
+            return false;
+        }
+        if (!mermaidInitialized) {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: currentTheme,
+                securityLevel: 'loose',
+                fontFamily: '"Segoe UI", Arial, sans-serif'
+            });
+            mermaidInitialized = true;
+        }
+        return true;
+    }
+
+    // Render diagram
+    function renderDiagram() {
+        if (!initMermaid()) return;
+
+        var code = inputCode.value.trim();
+        if (!code) {
+            previewContainer.innerHTML = '<div class="placeholder">Please enter Mermaid syntax</div>';
+            statusInfo.textContent = 'No input';
+            downloadBtn.disabled = true;
+            fileSizeInfo.textContent = '';
+            currentSVGString = null;
+            currentPNGBlob = null;
+            return;
+        }
+
+        statusInfo.textContent = 'Rendering...';
+        progressBar.style.display = 'block';
+        progressFill.style.width = '30%';
+
+        var renderId = 'mermaid-render-' + Date.now();
+        var renderDiv = document.createElement('div');
+        renderDiv.id = renderId;
+        renderDiv.style.display = 'none';
+        document.body.appendChild(renderDiv);
+
+        var onSuccess = function(svgCode) {
+            progressFill.style.width = '70%';
+            currentSVGString = svgCode;
+
+            // Show SVG preview
+            previewContainer.innerHTML = svgCode;
+            var svgElem = previewContainer.querySelector('svg');
+            if (svgElem) {
+                svgElem.style.maxWidth = '100%';
+                svgElem.style.height = 'auto';
+            }
+
+            statusInfo.textContent = 'Rendered OK. Generating high-res PNG...';
+            progressFill.style.width = '85%';
+            generateHighResPNG(svgCode);
+
+            if (renderDiv.parentNode) document.body.removeChild(renderDiv);
+        };
+
+        var onError = function(err) {
+            var msg = (err && err.message) ? err.message : String(err);
+            previewContainer.innerHTML = '<div class="error">Mermaid Error: ' + msg + '</div>';
+            statusInfo.textContent = 'Render failed';
+            progressBar.style.display = 'none';
+            downloadBtn.disabled = true;
+            currentSVGString = null;
+            currentPNGBlob = null;
+            if (renderDiv.parentNode) document.body.removeChild(renderDiv);
+        };
+
+        try {
+            // mermaid.render() is async — returns a Promise
+            var result = mermaid.render(renderId, code);
+
+            if (result && typeof result.then === 'function') {
+                // Promise-based API (v10+)
+                result.then(function(res) {
+                    var svg = (res && res.svg) ? res.svg : (typeof res === 'string' ? res : null);
+                    if (svg) { onSuccess(svg); } else { onError('No SVG returned from render'); }
+                }).catch(function(err) { onError(err); });
+            } else if (typeof result === 'string') {
+                // Synchronous string return (older API)
+                onSuccess(result);
+            } else {
+                onError('Unexpected render result type: ' + typeof result);
+            }
+        } catch (e) {
+            // Try callback-style API as fallback
+            try {
+                mermaid.mermaidAPI.render(renderId, code, function(svgCode, bindFunctions) {
+                    onSuccess(svgCode);
+                });
+            } catch (e2) {
+                onError(e2);
+            }
+        }
+    }
+
+    function getSvgDimensions(svgEl) {
+        // Try viewBox first (most reliable for mermaid SVGs)
+        var vb = svgEl.getAttribute('viewBox');
+        if (vb) {
+            var parts = vb.trim().split(/\s+/);
+            if (parts.length === 4) {
+                return { width: parseFloat(parts[2]), height: parseFloat(parts[3]) };
+            }
+        }
+        // Try width/height attributes (handle "100%" as fallback)
+        var w = svgEl.getAttribute('width');
+        var h = svgEl.getAttribute('height');
+        var parsedW = w ? parseFloat(w) : NaN;
+        var parsedH = h ? parseFloat(h) : NaN;
+        if (!isNaN(parsedW) && !isNaN(parsedH)) {
+            return { width: parsedW, height: parsedH };
+        }
+        // Fallback to reasonable defaults
+        return { width: 800, height: 600 };
+    }
+
+    function generateHighResPNG(svgCode) {
+        var scale = parseFloat(scaleSlider.value) || 3;
+        var targetWidth = parseInt(widthSelect.value) || 1200;
+
+        // Parse SVG for dimensions
+        var parser = new DOMParser();
+        var svgDoc = parser.parseFromString(svgCode, 'image/svg+xml');
+        var svgEl = svgDoc.querySelector('svg');
+
+        if (!svgEl) {
+            statusInfo.textContent = 'Error: No SVG element found in render output';
+            progressBar.style.display = 'none';
+            downloadBtn.disabled = true;
+            return;
+        }
+
+        var dims = getSvgDimensions(svgEl);
+        var aspectRatio = dims.height / dims.width;
+        var newWidth = targetWidth;
+        var newHeight = Math.round(newWidth * aspectRatio);
+
+        var canvasWidth = Math.round(newWidth * scale);
+        var canvasHeight = Math.round(newHeight * scale);
+
+        // Create self-contained SVG with absolute dimensions
+        var inlineSvg = svgCode.replace(/<svg([^>]*)>/, function(match, attrs) {
+            // Remove any width/height attributes, we'll set our own
+            attrs = attrs.replace(/\s+width\s*=\s*"[^"]*"/, '');
+            attrs = attrs.replace(/\s+height\s*=\s*"[^"]*"/, '');
+            attrs = attrs.replace(/\s+style\s*=\s*"[^"]*"/, '');
+            return '<svg' + attrs + ' width="' + newWidth + '" height="' + newHeight + '" style="background-color: transparent;">';
+        });
+
+        // SVG as data URI (proper encoding preserves colors like #ff0000)
+        var dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(inlineSvg);
+
+        var img = new Image();
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            var ctx = canvas.getContext('2d');
+
+            if (currentBg === 'white') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0);
+
+            progressFill.style.width = '100%';
+
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    statusInfo.textContent = 'Error: Canvas toBlob returned null';
+                    progressBar.style.display = 'none';
+                    downloadBtn.disabled = true;
+                    return;
+                }
+                currentPNGBlob = blob;
+                var sizeKB = (blob.size / 1024).toFixed(1);
+                var sizeInfo = sizeKB + ' KB';
+                if (blob.size > 1024 * 1024) {
+                    sizeInfo = (blob.size / 1024 / 1024).toFixed(2) + ' MB';
+                }
+
+                fileSizeInfo.textContent = 'PNG: ' + sizeInfo + ' | ' + canvasWidth + ' x ' + canvasHeight + ' px @ ' + (72 * scale).toFixed(0) + ' DPI';
+                statusInfo.textContent = 'Ready to download';
+                downloadBtn.disabled = false;
+
+                setTimeout(function() {
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 500);
+            }, 'image/png');
+        };
+
+        img.onerror = function() {
+            // Retry with blob URL as fallback
+            try {
+                var svgBlob = new Blob([inlineSvg], { type: 'image/svg+xml;charset=utf-8' });
+                var blobUrl = URL.createObjectURL(svgBlob);
+                img.onerror = function() {
+                    URL.revokeObjectURL(blobUrl);
+                    statusInfo.textContent = 'Error: Failed to render PNG from SVG. Try a different diagram type.';
+                    progressBar.style.display = 'none';
+                    downloadBtn.disabled = true;
+                };
+                img.onload = function() {
+                    URL.revokeObjectURL(blobUrl);
+                    // Re-trigger canvas drawing
+                    var canvas = document.createElement('canvas');
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    var ctx = canvas.getContext('2d');
+                    if (currentBg === 'white') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob(function(blob) {
+                        if (!blob) { statusInfo.textContent = 'Error generating PNG'; progressBar.style.display = 'none'; downloadBtn.disabled = true; return; }
+                        currentPNGBlob = blob;
+                        fileSizeInfo.textContent = 'PNG: ' + (blob.size/1024).toFixed(1) + ' KB | ' + canvasWidth + 'x' + canvasHeight;
+                        statusInfo.textContent = 'Ready to download';
+                        downloadBtn.disabled = false;
+                        setTimeout(function() { progressBar.style.display = 'none'; progressFill.style.width = '0%'; }, 500);
+                    }, 'image/png');
+                };
+                img.src = blobUrl;
+            } catch(e) {
+                statusInfo.textContent = 'Error: ' + e.message;
+                progressBar.style.display = 'none';
+                downloadBtn.disabled = true;
+            }
+        };
+
+        img.src = dataUrl;
+    }
+
+    // Download
+    downloadBtn.addEventListener('click', function() {
+        if (!currentPNGBlob) return;
+
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(currentPNGBlob);
+        a.download = 'mermaid_diagram_' + Date.now() + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 100);
+    });
+
+    // Render button
+    renderBtn.addEventListener('click', renderDiagram);
+
+    // Auto-render on Ctrl+Enter
+    inputCode.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') { renderDiagram(); }
+    });
+
+    // Initial check for mermaid
+    if (typeof mermaid === 'undefined') {
+        statusInfo.textContent = 'Waiting for mermaid.min.js to load...';
+        var checkInterval = setInterval(function() {
+            if (typeof mermaid !== 'undefined') {
+                statusInfo.textContent = 'Ready';
+                clearInterval(checkInterval);
+                renderBtn.disabled = false;
+            }
+        }, 500);
+        setTimeout(function() {
+            if (typeof mermaid === 'undefined') {
+                statusInfo.textContent = 'ERROR: mermaid.min.js not found. Place it in lib/mermaid.min.js';
+                renderBtn.disabled = true;
+            }
+            clearInterval(checkInterval);
+        }, 10000);
+    }
+
+})();
+</script>
+</body>
+</html>

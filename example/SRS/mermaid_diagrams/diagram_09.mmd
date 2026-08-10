@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant POC as Regular User (POC)
+    participant REMARKS as Remarks System
+    participant ADMIN as Admin (HR)
+    
+    POC->>REMARKS: Submit remark<br/>about employee attendance
+    Note over REMARKS: Stores: SubmittedBy, SenderName,<br/>EmpID, RemarkDate, Message,<br/>IsRead=0, CreatedAt
+    
+    REMARKS-->>ADMIN: Bell icon badge shows<br/>unread count
+    ADMIN->>REMARKS: View remarks inbox
+    ADMIN->>REMARKS: Mark as read (IsRead=1)
+    ADMIN->>REMARKS: Review & take action
+    ADMIN->>REMARKS: Delete remark (optional)
+    
+    POC->>REMARKS: View own sent remarks
+    REMARKS-->>POC: Show history of sent remarks

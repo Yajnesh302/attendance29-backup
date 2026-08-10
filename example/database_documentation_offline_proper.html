@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attendance Management System — Database Documentation</title>
+<style>
+:root {
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --text: #172033;
+  --muted: #5f6b7a;
+  --border: #d9e2ef;
+  --accent: #2b6cb0;
+  --accent-2: #0f766e;
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.55;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.page { max-width: 1500px; margin: 0 auto; padding: 20px; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+.sidebar {
+  position: sticky; top: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+  color: white;
+  border-radius: 22px;
+  padding: 24px 26px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.hero h1 { margin: 8px 0 8px; font-size: 2rem; line-height: 1.15; }
+.hero p { margin: 0; color: rgba(255,255,255,0.9); max-width: 70ch; }
+.hero-badge {
+  display: inline-block; padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,255,255,0.16); font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.summary-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+  margin: 16px 0 18px;
+}
+.summary-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+  box-shadow: var(--shadow); padding: 14px 16px;
+}
+.summary-k {
+  font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); margin-bottom: 6px;
+}
+.summary-v { font-size: 0.98rem; font-weight: 600; }
+.toc-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.toc-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.toc-list li { font-size: 0.92rem; }
+.toc-list li.lvl-3 { margin-left: 12px; font-size: 0.88rem; }
+.toc-list li.lvl-4 { margin-left: 24px; font-size: 0.86rem; }
+.content { min-width: 0; }
+.content h2, .content h3, .content h4 { scroll-margin-top: 24px; }
+.content h2 {
+  margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.content h3 { margin-top: 22px; }
+.content h4 { margin-top: 18px; }
+.content blockquote {
+  margin: 14px 0; padding: 14px 16px; border-left: 4px solid var(--accent);
+  background: #eef5ff; border-radius: 0 14px 14px 0; color: #1e355f;
+}
+.content table {
+  width: 100%; border-collapse: collapse; margin: 14px 0 18px; background: white;
+  border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 8px 20px rgba(16,24,40,0.05);
+}
+.content th, .content td {
+  border-bottom: 1px solid #e8edf5; padding: 10px 12px; vertical-align: top; text-align: left;
+}
+.content th { background: #f3f7fc; font-weight: 700; }
+.content tr:last-child td { border-bottom: none; }
+.content pre {
+  overflow: auto; background: #0b1020; color: #e8eefc; padding: 14px 16px;
+  border-radius: 14px; box-shadow: var(--shadow);
+}
+.content code {
+  background: #eef2ff; padding: 0.15em 0.35em; border-radius: 6px; font-size: 0.95em;
+}
+.content pre code { background: transparent; padding: 0; color: inherit; }
+.content ul, .content ol { padding-left: 22px; }
+.content hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.diagram-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+  box-shadow: var(--shadow); padding: 16px; margin: 20px 0 26px; overflow: hidden;
+}
+.section-label {
+  font-size: 0.92rem; font-weight: 700; color: var(--accent-2); margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.diagram-card svg { width: 100%; height: auto; display: block; }
+.caption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; max-height: none; }
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .page { padding: 12px; }
+  .hero h1 { font-size: 1.6rem; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .sidebar { padding: 12px; }
+  .content table, .content th, .content td { font-size: 0.92rem; }
+}
+@media print {
+  body { background: white; }
+  .layout { grid-template-columns: 1fr; }
+  .sidebar, .hero { box-shadow: none; }
+  a { color: black; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  
+<header class="hero">
+  <div class="hero-badge">Offline HTML Documentation</div>
+  <h1>Attendance Management System — Complete Database Documentation</h1>
+  <p>Self-contained documentation generated from the uploaded Markdown file. No external stylesheets, scripts, or network fetches are used.</p>
+</header>
+
+  <section class="summary-grid"><div class="summary-card"><div class="summary-k">Database</div><div class="summary-v">Oracle 11g</div></div><div class="summary-card"><div class="summary-k">Schema</div><div class="summary-v">`SYSTEM` (application tables) + `HRDATA` (company HR data)</div></div><div class="summary-card"><div class="summary-k">Total Tables</div><div class="summary-v">18</div></div><div class="summary-card"><div class="summary-k">Auto-increment strategy</div><div class="summary-v">SEQUENCE + BEFORE INSERT TRIGGER (Oracle 11g compatible)</div></div></section>
+  <div class="layout">
+    <aside class="sidebar">
+      <nav class="toc-nav"><div class="toc-title">Contents</div><ol class="toc-list">
+<li class="lvl-2"><a href="#1-entity-relationship-overview">1. Entity-Relationship Overview</a></li>
+<li class="lvl-2"><a href="#2-hrdata-empdetails">2. hrdata.empdetails</a></li>
+<li class="lvl-2"><a href="#3-appusers">3. AppUsers</a></li>
+<li class="lvl-2"><a href="#4-divisions">4. Divisions</a></li>
+<li class="lvl-2"><a href="#5-categories">5. Categories</a></li>
+<li class="lvl-2"><a href="#6-userdivisions">6. UserDivisions</a></li>
+<li class="lvl-2"><a href="#7-vendors">7. Vendors</a></li>
+<li class="lvl-2"><a href="#8-contractperiods">8. ContractPeriods</a></li>
+<li class="lvl-2"><a href="#9-contractperiodvendors">9. ContractPeriodVendors</a></li>
+<li class="lvl-2"><a href="#10-employees">10. Employees</a></li>
+<li class="lvl-2"><a href="#11-employeeengagements">11. EmployeeEngagements</a></li>
+<li class="lvl-2"><a href="#12-attendance">12. Attendance</a></li>
+<li class="lvl-2"><a href="#13-calculationwages">13. CalculationWages</a></li>
+<li class="lvl-2"><a href="#14-calculationoverrides">14. CalculationOverrides</a></li>
+<li class="lvl-2"><a href="#15-employeeactionlogs">15. EmployeeActionLogs</a></li>
+<li class="lvl-2"><a href="#16-actionlog">16. ActionLog</a></li>
+<li class="lvl-2"><a href="#17-adminactionlog">17. AdminActionLog</a></li>
+<li class="lvl-2"><a href="#18-attendance-audit-log">18. Attendance_Audit_Log</a></li>
+<li class="lvl-2"><a href="#19-attendanceremarks">19. AttendanceRemarks</a></li>
+<li class="lvl-2"><a href="#20-relationship-quick-reference-map">20. Relationship Quick-Reference Map</a></li>
+<li class="lvl-2"><a href="#auto-increment-summary">Auto-Increment Summary</a></li>
+</ol></nav>
+    </aside>
+    <main class="content">
+      <h1 id="attendance-management-system-complete-database-documentation">Attendance Management System — Complete Database Documentation</h1>
+<hr/>
+<h2 id="1-entity-relationship-overview">1. Entity-Relationship Overview</h2>
+<p>
+<section class="diagram-card" id="entity-relationship-overview">
+  <div class="section-label">Entity-Relationship Overview</div>
+  <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.42.4 (0)
+ -->
+<!-- Title: ERD Pages: 1 -->
+<svg width="1176pt" height="397pt"
+ viewBox="0.00 0.00 1175.80 396.80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 382.4)">
+<title>ERD</title>
+<polygon fill="white" stroke="transparent" points="-14.4,14.4 -14.4,-382.4 1161.4,-382.4 1161.4,14.4 -14.4,14.4"/>
+<!-- empdetails -->
+<g id="node1" class="node">
+<title>empdetails</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M153.5,-368C153.5,-368 73.5,-368 73.5,-368 67.5,-368 61.5,-362 61.5,-356 61.5,-356 61.5,-344 61.5,-344 61.5,-338 67.5,-332 73.5,-332 73.5,-332 153.5,-332 153.5,-332 159.5,-332 165.5,-338 165.5,-344 165.5,-344 165.5,-356 165.5,-356 165.5,-362 159.5,-368 153.5,-368"/>
+<text text-anchor="middle" x="113.5" y="-347.2" font-family="Arial" font-size="11.00">hrdata.empdetails</text>
+</g>
+<!-- appusers -->
+<g id="node2" class="node">
+<title>appusers</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M135,-285C135,-285 92,-285 92,-285 86,-285 80,-279 80,-273 80,-273 80,-261 80,-261 80,-255 86,-249 92,-249 92,-249 135,-249 135,-249 141,-249 147,-255 147,-261 147,-261 147,-273 147,-273 147,-279 141,-285 135,-285"/>
+<text text-anchor="middle" x="113.5" y="-264.2" font-family="Arial" font-size="11.00">AppUsers</text>
+</g>
+<!-- empdetails&#45;&gt;appusers -->
+<g id="edge1" class="edge">
+<title>empdetails&#45;&gt;appusers</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M113.5,-331.82C113.5,-320.33 113.5,-305.04 113.5,-292.31"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="115.95,-292.15 113.5,-285.15 111.05,-292.15 115.95,-292.15"/>
+</g>
+<!-- userdivisions -->
+<g id="node3" class="node">
+<title>userdivisions</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M190,-202C190,-202 129,-202 129,-202 123,-202 117,-196 117,-190 117,-190 117,-178 117,-178 117,-172 123,-166 129,-166 129,-166 190,-166 190,-166 196,-166 202,-172 202,-178 202,-178 202,-190 202,-190 202,-196 196,-202 190,-202"/>
+<text text-anchor="middle" x="159.5" y="-181.2" font-family="Arial" font-size="11.00">UserDivisions</text>
+</g>
+<!-- appusers&#45;&gt;userdivisions -->
+<g id="edge2" class="edge">
+<title>appusers&#45;&gt;userdivisions</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M123.26,-248.82C129.96,-237.01 138.95,-221.18 146.3,-208.24"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="148.43,-209.45 149.76,-202.15 144.17,-207.03 148.43,-209.45"/>
+</g>
+<!-- attendanceremarks -->
+<g id="node18" class="node">
+<title>attendanceremarks</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M105,-36C105,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 105,0 105,0 111,0 117,-6 117,-12 117,-12 117,-24 117,-24 117,-30 111,-36 105,-36"/>
+<text text-anchor="middle" x="58.5" y="-15.2" font-family="Arial" font-size="11.00">AttendanceRemarks</text>
+</g>
+<!-- appusers&#45;&gt;attendanceremarks -->
+<g id="edge21" class="edge">
+<title>appusers&#45;&gt;attendanceremarks</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M109.63,-248.63C100,-205.39 74.94,-92.83 63.88,-43.16"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="66.2,-42.32 62.29,-36.02 61.42,-43.39 66.2,-42.32"/>
+</g>
+<!-- divisions -->
+<g id="node4" class="node">
+<title>divisions</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M260,-285C260,-285 223,-285 223,-285 217,-285 211,-279 211,-273 211,-273 211,-261 211,-261 211,-255 217,-249 223,-249 223,-249 260,-249 260,-249 266,-249 272,-255 272,-261 272,-261 272,-273 272,-273 272,-279 266,-285 260,-285"/>
+<text text-anchor="middle" x="241.5" y="-264.2" font-family="Arial" font-size="11.00">Divisions</text>
+</g>
+<!-- divisions&#45;&gt;userdivisions -->
+<g id="edge3" class="edge">
+<title>divisions&#45;&gt;userdivisions</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M224.11,-248.82C211.82,-236.69 195.25,-220.31 181.96,-207.19"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="183.57,-205.33 176.87,-202.15 180.12,-208.82 183.57,-205.33"/>
+</g>
+<!-- employees -->
+<g id="node9" class="node">
+<title>employees</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M297.5,-202C297.5,-202 249.5,-202 249.5,-202 243.5,-202 237.5,-196 237.5,-190 237.5,-190 237.5,-178 237.5,-178 237.5,-172 243.5,-166 249.5,-166 249.5,-166 297.5,-166 297.5,-166 303.5,-166 309.5,-172 309.5,-178 309.5,-178 309.5,-190 309.5,-190 309.5,-196 303.5,-202 297.5,-202"/>
+<text text-anchor="middle" x="273.5" y="-181.2" font-family="Arial" font-size="11.00">Employees</text>
+</g>
+<!-- divisions&#45;&gt;employees -->
+<g id="edge4" class="edge">
+<title>divisions&#45;&gt;employees</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M248.29,-248.82C252.87,-237.22 258.98,-221.75 264.04,-208.95"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="266.43,-209.56 266.72,-202.15 261.87,-207.76 266.43,-209.56"/>
+</g>
+<!-- categories -->
+<g id="node5" class="node">
+<title>categories</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M819,-285C819,-285 772,-285 772,-285 766,-285 760,-279 760,-273 760,-273 760,-261 760,-261 760,-255 766,-249 772,-249 772,-249 819,-249 819,-249 825,-249 831,-255 831,-261 831,-261 831,-273 831,-273 831,-279 825,-285 819,-285"/>
+<text text-anchor="middle" x="795.5" y="-264.2" font-family="Arial" font-size="11.00">Categories</text>
+</g>
+<!-- contractperiods -->
+<g id="node7" class="node">
+<title>contractperiods</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M762,-202C762,-202 689,-202 689,-202 683,-202 677,-196 677,-190 677,-190 677,-178 677,-178 677,-172 683,-166 689,-166 689,-166 762,-166 762,-166 768,-166 774,-172 774,-178 774,-178 774,-190 774,-190 774,-196 768,-202 762,-202"/>
+<text text-anchor="middle" x="725.5" y="-181.2" font-family="Arial" font-size="11.00">ContractPeriods</text>
+</g>
+<!-- categories&#45;&gt;contractperiods -->
+<g id="edge5" class="edge">
+<title>categories&#45;&gt;contractperiods</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M780.65,-248.82C770.26,-236.79 756.27,-220.6 744.98,-207.54"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="746.75,-205.85 740.32,-202.15 743.05,-209.05 746.75,-205.85"/>
+</g>
+<!-- calculationwages -->
+<g id="node12" class="node">
+<title>calculationwages</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M907,-36C907,-36 826,-36 826,-36 820,-36 814,-30 814,-24 814,-24 814,-12 814,-12 814,-6 820,0 826,0 826,0 907,0 907,0 913,0 919,-6 919,-12 919,-12 919,-24 919,-24 919,-30 913,-36 907,-36"/>
+<text text-anchor="middle" x="866.5" y="-15.2" font-family="Arial" font-size="11.00">CalculationWages</text>
+</g>
+<!-- categories&#45;&gt;calculationwages -->
+<g id="edge19" class="edge">
+<title>categories&#45;&gt;calculationwages</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M800.49,-248.63C812.95,-205.3 845.41,-92.37 859.64,-42.85"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="862.03,-43.43 861.61,-36.02 857.32,-42.07 862.03,-43.43"/>
+</g>
+<!-- vendors -->
+<g id="node6" class="node">
+<title>vendors</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M636.5,-285C636.5,-285 602.5,-285 602.5,-285 596.5,-285 590.5,-279 590.5,-273 590.5,-273 590.5,-261 590.5,-261 590.5,-255 596.5,-249 602.5,-249 602.5,-249 636.5,-249 636.5,-249 642.5,-249 648.5,-255 648.5,-261 648.5,-261 648.5,-273 648.5,-273 648.5,-279 642.5,-285 636.5,-285"/>
+<text text-anchor="middle" x="619.5" y="-264.2" font-family="Arial" font-size="11.00">Vendors</text>
+</g>
+<!-- vendors&#45;&gt;contractperiods -->
+<g id="edge6" class="edge">
+<title>vendors&#45;&gt;contractperiods</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M641.98,-248.82C658.14,-236.47 680.05,-219.73 697.37,-206.5"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="698.98,-208.35 703.05,-202.15 696,-204.46 698.98,-208.35"/>
+</g>
+<!-- contractperiodvendors -->
+<g id="node8" class="node">
+<title>contractperiodvendors</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M673,-119C673,-119 566,-119 566,-119 560,-119 554,-113 554,-107 554,-107 554,-95 554,-95 554,-89 560,-83 566,-83 566,-83 673,-83 673,-83 679,-83 685,-89 685,-95 685,-95 685,-107 685,-107 685,-113 679,-119 673,-119"/>
+<text text-anchor="middle" x="619.5" y="-98.2" font-family="Arial" font-size="11.00">ContractPeriodVendors</text>
+</g>
+<!-- vendors&#45;&gt;contractperiodvendors -->
+<g id="edge7" class="edge">
+<title>vendors&#45;&gt;contractperiodvendors</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M619.5,-248.76C619.5,-219.4 619.5,-159.63 619.5,-126.13"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="621.95,-126.01 619.5,-119.01 617.05,-126.01 621.95,-126.01"/>
+</g>
+<!-- employeeengagements -->
+<g id="node10" class="node">
+<title>employeeengagements</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M510,-119C510,-119 401,-119 401,-119 395,-119 389,-113 389,-107 389,-107 389,-95 389,-95 389,-89 395,-83 401,-83 401,-83 510,-83 510,-83 516,-83 522,-89 522,-95 522,-95 522,-107 522,-107 522,-113 516,-119 510,-119"/>
+<text text-anchor="middle" x="455.5" y="-98.2" font-family="Arial" font-size="11.00">EmployeeEngagements</text>
+</g>
+<!-- vendors&#45;&gt;employeeengagements -->
+<g id="edge11" class="edge">
+<title>vendors&#45;&gt;employeeengagements</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M602.26,-248.76C572.28,-218.78 510.61,-157.11 477.56,-124.06"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="479.19,-122.23 472.51,-119.01 475.73,-125.69 479.19,-122.23"/>
+</g>
+<!-- contractperiods&#45;&gt;contractperiodvendors -->
+<g id="edge8" class="edge">
+<title>contractperiods&#45;&gt;contractperiodvendors</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M703.02,-165.82C686.86,-153.47 664.95,-136.73 647.63,-123.5"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="649,-121.46 641.95,-119.15 646.02,-125.35 649,-121.46"/>
+</g>
+<!-- contractperiods&#45;&gt;employeeengagements -->
+<g id="edge10" class="edge">
+<title>contractperiods&#45;&gt;employeeengagements</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M676.92,-168.43C632.93,-155.23 567.81,-135.69 519.57,-121.22"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="519.99,-118.79 512.58,-119.13 518.59,-123.48 519.99,-118.79"/>
+</g>
+<!-- attendance -->
+<g id="node11" class="node">
+<title>attendance</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M561,-36C561,-36 512,-36 512,-36 506,-36 500,-30 500,-24 500,-24 500,-12 500,-12 500,-6 506,0 512,0 512,0 561,0 561,0 567,0 573,-6 573,-12 573,-12 573,-24 573,-24 573,-30 567,-36 561,-36"/>
+<text text-anchor="middle" x="536.5" y="-15.2" font-family="Arial" font-size="11.00">Attendance</text>
+</g>
+<!-- contractperiods&#45;&gt;attendance -->
+<g id="edge15" class="edge">
+<title>contractperiods&#45;&gt;attendance</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M734.61,-165.85C744.68,-146.89 759.5,-119 759.5,-119 759.5,-119 759.5,-83 759.5,-83 759.5,-83 589.5,-36 589.5,-36 589.5,-36 585.56,-34.74 579.84,-32.9"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="580.43,-30.52 573.02,-30.71 578.94,-35.19 580.43,-30.52"/>
+</g>
+<!-- calculationoverrides -->
+<g id="node13" class="node">
+<title>calculationoverrides</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M455.5,-36C455.5,-36 361.5,-36 361.5,-36 355.5,-36 349.5,-30 349.5,-24 349.5,-24 349.5,-12 349.5,-12 349.5,-6 355.5,0 361.5,0 361.5,0 455.5,0 455.5,0 461.5,0 467.5,-6 467.5,-12 467.5,-12 467.5,-24 467.5,-24 467.5,-30 461.5,-36 455.5,-36"/>
+<text text-anchor="middle" x="408.5" y="-15.2" font-family="Arial" font-size="11.00">CalculationOverrides</text>
+</g>
+<!-- contractperiods&#45;&gt;calculationoverrides -->
+<g id="edge18" class="edge">
+<title>contractperiods&#45;&gt;calculationoverrides</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M721.32,-165.58C714.44,-136.93 701.5,-83 701.5,-83 701.5,-83 484.5,-36 484.5,-36 484.5,-36 480.69,-35.15 474.79,-33.83"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="475,-31.36 467.63,-32.23 473.93,-36.15 475,-31.36"/>
+</g>
+<!-- employees&#45;&gt;employeeengagements -->
+<g id="edge9" class="edge">
+<title>employees&#45;&gt;employeeengagements</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M302.08,-165.82C328.54,-152.95 368.03,-135.3 400.47,-121.82"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="401.75,-123.95 407.28,-119.01 399.88,-119.42 401.75,-123.95"/>
+</g>
+<!-- employees&#45;&gt;attendance -->
+<g id="edge13" class="edge">
+<title>employees&#45;&gt;attendance</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M290.92,-165.58C319.57,-136.93 373.5,-83 373.5,-83 373.5,-83 444.98,-54.93 493.27,-35.97"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="494.3,-38.2 499.92,-33.36 492.51,-33.64 494.3,-38.2"/>
+</g>
+<!-- employees&#45;&gt;calculationoverrides -->
+<g id="edge16" class="edge">
+<title>employees&#45;&gt;calculationoverrides</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M280.64,-165.58C292.39,-136.93 314.5,-83 314.5,-83 314.5,-83 349.91,-58.89 377.26,-40.27"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="378.9,-42.12 383.31,-36.15 376.14,-38.07 378.9,-42.12"/>
+</g>
+<!-- employeeactionlogs -->
+<g id="node14" class="node">
+<title>employeeactionlogs</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M257.5,-36C257.5,-36 161.5,-36 161.5,-36 155.5,-36 149.5,-30 149.5,-24 149.5,-24 149.5,-12 149.5,-12 149.5,-6 155.5,0 161.5,0 161.5,0 257.5,0 257.5,0 263.5,0 269.5,-6 269.5,-12 269.5,-12 269.5,-24 269.5,-24 269.5,-30 263.5,-36 257.5,-36"/>
+<text text-anchor="middle" x="209.5" y="-15.2" font-family="Arial" font-size="11.00">EmployeeActionLogs</text>
+</g>
+<!-- employees&#45;&gt;employeeactionlogs -->
+<g id="edge20" class="edge">
+<title>employees&#45;&gt;employeeactionlogs</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M266.8,-165.85C259.4,-146.89 248.5,-119 248.5,-119 248.5,-119 230.47,-72.78 218.93,-43.18"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="221.12,-42.05 216.29,-36.42 216.55,-43.83 221.12,-42.05"/>
+</g>
+<!-- employees&#45;&gt;attendanceremarks -->
+<g id="edge22" class="edge">
+<title>employees&#45;&gt;attendanceremarks</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M250.9,-165.76C211.36,-135.6 129.74,-73.34 86.62,-40.45"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="87.85,-38.31 80.8,-36.01 84.88,-42.2 87.85,-38.31"/>
+</g>
+<!-- employeeengagements&#45;&gt;employees -->
+<g id="edge12" class="edge">
+<title>employeeengagements&#45;&gt;employees</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M427.26,-119.01C397.38,-133.57 350.62,-154.31 316.3,-168.19"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="315.19,-166 309.6,-170.87 317.01,-170.54 315.19,-166"/>
+</g>
+<!-- employeeengagements&#45;&gt;attendance -->
+<g id="edge14" class="edge">
+<title>employeeengagements&#45;&gt;attendance</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M472.68,-82.82C484.81,-70.69 501.19,-54.31 514.31,-41.19"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="516.13,-42.84 519.35,-36.15 512.66,-39.37 516.13,-42.84"/>
+</g>
+<!-- employeeengagements&#45;&gt;calculationoverrides -->
+<g id="edge17" class="edge">
+<title>employeeengagements&#45;&gt;calculationoverrides</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M445.53,-82.82C438.68,-71.01 429.49,-55.18 421.99,-42.24"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="424.09,-40.98 418.45,-36.15 419.85,-43.44 424.09,-40.98"/>
+</g>
+<!-- attendanceauditlog -->
+<g id="node17" class="node">
+<title>attendanceauditlog</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M721.5,-36C721.5,-36 617.5,-36 617.5,-36 611.5,-36 605.5,-30 605.5,-24 605.5,-24 605.5,-12 605.5,-12 605.5,-6 611.5,0 617.5,0 617.5,0 721.5,0 721.5,0 727.5,0 733.5,-6 733.5,-12 733.5,-12 733.5,-24 733.5,-24 733.5,-30 727.5,-36 721.5,-36"/>
+<text text-anchor="middle" x="669.5" y="-15.2" font-family="Arial" font-size="11.00">Attendance_Audit_Log</text>
+</g>
+<!-- attendance&#45;&gt;attendanceauditlog -->
+<g id="edge23" class="edge">
+<title>attendance&#45;&gt;attendanceauditlog</title>
+<path fill="none" stroke="#6c757d" stroke-width="1.2" d="M573.11,-18C577.71,-18 580.83,-18 580.83,-18 580.83,-18 588.9,-18 598.14,-18"/>
+<polygon fill="#6c757d" stroke="#6c757d" stroke-width="1.2" points="598.33,-20.45 605.33,-18 598.33,-15.55 598.33,-20.45"/>
+</g>
+<!-- actionlog -->
+<g id="node15" class="node">
+<title>actionlog</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M1006,-36C1006,-36 963,-36 963,-36 957,-36 951,-30 951,-24 951,-24 951,-12 951,-12 951,-6 957,0 963,0 963,0 1006,0 1006,0 1012,0 1018,-6 1018,-12 1018,-12 1018,-24 1018,-24 1018,-30 1012,-36 1006,-36"/>
+<text text-anchor="middle" x="984.5" y="-15.2" font-family="Arial" font-size="11.00">ActionLog</text>
+</g>
+<!-- adminactionlog -->
+<g id="node16" class="node">
+<title>adminactionlog</title>
+<path fill="#f4f8fc" stroke="#355c7d" d="M1135,-36C1135,-36 1062,-36 1062,-36 1056,-36 1050,-30 1050,-24 1050,-24 1050,-12 1050,-12 1050,-6 1056,0 1062,0 1062,0 1135,0 1135,0 1141,0 1147,-6 1147,-12 1147,-12 1147,-24 1147,-24 1147,-30 1141,-36 1135,-36"/>
+<text text-anchor="middle" x="1098.5" y="-15.2" font-family="Arial" font-size="11.00">AdminActionLog</text>
+</g>
+</g>
+</svg>
+
+  <div class="caption">Static offline diagram rendered locally from the document relationships.</div>
+</section>
+</p>
+<hr/>
+<h2 id="2-hrdata-empdetails">2. <code>hrdata.empdetails</code></h2>
+<p><strong>Schema</strong>: <code>HRDATA</code><br/>
+<strong>Purpose</strong>: Stores the official company HR records. This table is the <strong>source of truth for employee names, designations, and divisions</strong> at login time. It is typically maintained by the company's existing HR system. The attendance app reads from it during login to populate the user's session details.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PCNO</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Personnel/Company Number — the unique employee ID issued by the company. This is the same number used as the username in Active Directory login.</td>
+</tr>
+<tr>
+<td><code>NAME</code></td>
+<td>VARCHAR2(200)</td>
+<td>NOT NULL</td>
+<td>Full display name of the employee (e.g., "Rajesh Kumar").</td>
+</tr>
+<tr>
+<td><code>DESIGNATION</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Job designation/title (e.g., "Engineer", "Manager", "Technician").</td>
+</tr>
+<tr>
+<td><code>DIVNAME</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Division or department the employee belongs to in the company org structure (e.g., "DKRM/ITISG").</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><strong>Read by <code>Login.aspx.cs</code></strong> during login: after Active Directory authenticates the user's PCNO, this table is queried to fetch their name, designation, and division for the session.</li>
+<li><strong>Not directly linked</strong> by a foreign key to application tables — it is an independent HR data store.</li>
+<li>If a PCNO is missing from this table, the login falls back gracefully using the name stored in <code>AppUsers</code>.</li>
+</ul>
+<hr/>
+<h2 id="3-appusers">3. <code>AppUsers</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: The <strong>application's user registry</strong>. Every person who can log into the attendance system must have a row here. It stores their PCNO (same as AD username), display name, and their role (admin or regular user). This table is what the app checks <strong>after</strong> AD authentication succeeds.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PCNO</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Personnel/Company Number — must match the PCNO returned by Active Directory's <code>EmployeeID</code> attribute.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td>VARCHAR2(200)</td>
+<td>NOT NULL</td>
+<td>Display name. For admin accounts this is updated automatically at every login from <code>hrdata.empdetails</code>.</td>
+</tr>
+<tr>
+<td><code>Role</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td>Access level: <code>1</code> = Admin (full access), <code>0</code> = Regular User (division-restricted access), <code>2</code> = Revoked Admin, <code>3</code> = Revoked Regular User. Revoked users get an "access denied" message at login.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>PCNO</code> is referenced by <strong><code>UserDivisions.PCNO</code></strong> — every regular user has one or more division mappings.</li>
+<li><code>PCNO</code> is referenced by <strong><code>AttendanceRemarks.SubmittedBy</code></strong> — tracks who sent each remark.</li>
+<li>Admins are created and managed via the Admin Management page (<code>AdminManagement.aspx</code>).</li>
+</ul>
+<hr/>
+<h2 id="4-divisions">4. <code>Divisions</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Master list of all <strong>organisational divisions/departments</strong> that exist in the company. This is the reference table for department names used throughout the system. Every employee is assigned to one division, and every regular user is granted access to one or more divisions.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_Divisions</code> + <code>TRG_Divisions</code>.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td><strong>Unique.</strong> Division name (e.g., "D-KRM", "AD-Admin", "CWG"). This value is used as a foreign key in multiple tables.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li>Referenced by <strong><code>Employees.Department</code></strong> — every employee's department must be a valid division name.</li>
+<li>Referenced by <strong><code>UserDivisions.DivisionName</code></strong> — defines which divisions a user can access.</li>
+<li>Managed by admin via the Settings page (<code>Settings.aspx</code>).</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_Divisions</code> sequence + <code>TRG_Divisions</code> trigger.</p>
+<hr/>
+<h2 id="5-categories">5. <code>Categories</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Master list of <strong>employee skill categories</strong> used for wage calculation and contract grouping. Examples are Skilled, Semi-Skilled, Unskilled. A contract period is always associated with one category, and each employee engagement belongs to a category.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_Categories</code> + <code>TRG_Categories</code>.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td><strong>Unique.</strong> Category name (e.g., "Skilled", "Semi-Skilled", "Unskilled"). Used as FK in <code>ContractPeriods</code> and <code>EmployeeEngagements</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li>Referenced by <strong><code>ContractPeriods.Category</code></strong> — each contract period is for a specific category.</li>
+<li>Referenced by <strong><code>EmployeeEngagements.Category</code></strong> — each employment stint is under a specific category.</li>
+<li>Referenced by <strong><code>CalculationWages.Category</code></strong> — wage rates are set per category per month.</li>
+<li>Referenced by <strong><code>CalculationOverrides.Category</code></strong> — overrides are per category per employee.</li>
+<li>Managed by admin via the Settings page.</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_Categories</code> sequence + <code>TRG_Categories</code> trigger.</p>
+<hr/>
+<h2 id="6-userdivisions">6. <code>UserDivisions</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: A <strong>many-to-many bridge table</strong> between <code>AppUsers</code> and <code>Divisions</code>. It defines which divisions a regular user is <strong>allowed to see and manage</strong>. When a regular user logs in, only employees from their allowed divisions are shown on the attendance page and in the send-remark employee list.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PCNO</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> FK → <code>AppUsers.PCNO</code>. The regular user who is being granted access.</td>
+</tr>
+<tr>
+<td><code>DivisionName</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> FK → <code>Divisions.Name</code>. The division this user is allowed to access.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Primary Key</strong>: <code>(PCNO, DivisionName)</code> — a user cannot be assigned the same division twice.</p>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>PCNO</code> → <code>AppUsers.PCNO</code>: links to the user account.</li>
+<li><code>DivisionName</code> → <code>Divisions.Name</code>: links to a valid division.</li>
+<li>Admins do <strong>not</strong> have rows here — they see all divisions automatically.</li>
+<li>Managed by admin via the Admin Management page.</li>
+</ul>
+<hr/>
+<h2 id="7-vendors">7. <code>Vendors</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Stores the <strong>manpower agencies or contractors</strong> who supply workers. Each contract period is associated with a vendor. Vendors can be marked inactive but are never deleted (to preserve historical data integrity).</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_Vendors</code> + <code>TRG_Vendors</code>.</td>
+</tr>
+<tr>
+<td><code>MasterId</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Unique.</strong> Human-readable vendor code (e.g., "VND001"). Used internally as a stable reference.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td>VARCHAR2(150)</td>
+<td>NOT NULL</td>
+<td><strong>Unique.</strong> Full vendor name (e.g., "Vishal Manpower Services").</td>
+</tr>
+<tr>
+<td><code>GemId</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Government e-Marketplace (GeM) portal ID for the vendor (used in official procurement).</td>
+</tr>
+<tr>
+<td><code>ContactName</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Name of the primary contact person at the vendor company.</td>
+</tr>
+<tr>
+<td><code>ContactPhone</code></td>
+<td>VARCHAR2(20)</td>
+<td>YES</td>
+<td>Phone number of the vendor contact.</td>
+</tr>
+<tr>
+<td><code>Address</code></td>
+<td>VARCHAR2(4000)</td>
+<td>YES</td>
+<td>Full postal address of the vendor.</td>
+</tr>
+<tr>
+<td><code>IsActive</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td><code>1</code> = Active vendor, <code>0</code> = Inactive/deactivated. Inactive vendors still appear in historical records but cannot be selected for new contracts.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li>Referenced by <strong><code>ContractPeriods.VendorId</code></strong> — a contract period is held by a vendor.</li>
+<li>Referenced by <strong><code>ContractPeriodVendors.VendorId</code></strong> — vendors can be attached to multiple contract periods.</li>
+<li>Referenced by <strong><code>EmployeeEngagements.VendorId</code></strong> — records which vendor supplied the employee during a stint.</li>
+<li>Managed via <code>Vendors.aspx</code>.</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_Vendors</code> sequence + <code>TRG_Vendors</code> trigger.</p>
+<hr/>
+<h2 id="8-contractperiods">8. <code>ContractPeriods</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Represents a <strong>formal contract period</strong> — a span of time during which a vendor supplies workers of a specific category under an official contract. This is the highest-level grouping for attendance and payroll. All employees and their attendance records are ultimately tied to a contract period.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_ContractPeriods</code> + <code>TRG_ContractPeriods</code>.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>FK → <code>Categories.Name</code>. The skill category this contract covers (e.g., "Skilled").</td>
+</tr>
+<tr>
+<td><code>VendorId</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>FK → <code>Vendors.Id</code>. The primary vendor holding this contract.</td>
+</tr>
+<tr>
+<td><code>StartDate</code></td>
+<td>DATE</td>
+<td>NOT NULL</td>
+<td>The date on which this contract period begins.</td>
+</tr>
+<tr>
+<td><code>EndDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>The date on which this contract period ends. NULL means the contract is still open/ongoing.</td>
+</tr>
+<tr>
+<td><code>Status</code></td>
+<td>VARCHAR2(20)</td>
+<td>NOT NULL</td>
+<td><code>'Active'</code> = currently in force, <code>'Closed'</code> = contract has ended.</td>
+</tr>
+<tr>
+<td><code>Notes</code></td>
+<td>VARCHAR2(4000)</td>
+<td>YES</td>
+<td>Free-text notes (e.g., contract reference number, special conditions).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique Constraint</strong>: <code>(Category, StartDate)</code> — only one contract per category can start on the same date.</p>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>Category</code> → <code>Categories.Name</code></li>
+<li><code>VendorId</code> → <code>Vendors.Id</code></li>
+<li>Referenced by <strong><code>ContractPeriodVendors.ContractPeriodId</code></strong></li>
+<li>Referenced by <strong><code>EmployeeEngagements.ContractPeriodId</code></strong> — every employment stint is under a contract.</li>
+<li>Referenced by <strong><code>Attendance.ContractPeriodId</code></strong> — attendance records carry the contract context.</li>
+<li>Referenced by <strong><code>CalculationOverrides.ContractPeriodId</code></strong></li>
+<li>Managed via <code>Contracts.aspx</code>.</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_ContractPeriods</code> + <code>TRG_ContractPeriods</code>.</p>
+<hr/>
+<h2 id="9-contractperiodvendors">9. <code>ContractPeriodVendors</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: A <strong>junction table</strong> that lists all vendors participating in a given contract period. While <code>ContractPeriods</code> has one primary vendor, a contract can involve multiple vendors (sub-contracting scenarios). This table tracks each vendor's participation and active status within a contract.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_ContractPeriodVendors</code> + <code>TRG_ContractPeriodVendors</code>.</td>
+</tr>
+<tr>
+<td><code>ContractPeriodId</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>FK → <code>ContractPeriods.Id</code>. Which contract period this vendor is part of.</td>
+</tr>
+<tr>
+<td><code>VendorId</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>FK → <code>Vendors.Id</code>. The vendor participating in this contract.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>The category of workers this vendor is supplying under this contract.</td>
+</tr>
+<tr>
+<td><code>IsActive</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td><code>1</code> = vendor is currently active in this contract, <code>0</code> = removed/inactive.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>ContractPeriodId</code> → <code>ContractPeriods.Id</code></li>
+<li><code>VendorId</code> → <code>Vendors.Id</code></li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_ContractPeriodVendors</code> + <code>TRG_ContractPeriodVendors</code>.</p>
+<hr/>
+<h2 id="10-employees">10. <code>Employees</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: The <strong>master employee registry</strong>. Every worker tracked in the attendance system has exactly one row here. An employee's <code>MasterId</code> is their permanent unique identifier that never changes, even when they change vendor, category, or division. All attendance records, engagements, and calculation overrides reference this table.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MasterId</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Permanent unique identifier for the employee (e.g., "EMP-0001"). This ID is generated when the employee is first registered and never changes.</td>
+</tr>
+<tr>
+<td><code>ID</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td>Employee's display ID — may be an official company-assigned ID number. Different from <code>MasterId</code>.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td>VARCHAR2(200)</td>
+<td>NOT NULL</td>
+<td>Full name of the employee.</td>
+</tr>
+<tr>
+<td><code>Department</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>FK → <code>Divisions.Name</code>. The division/department this employee currently works in.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(50)</td>
+<td>YES</td>
+<td>Current skill category (e.g., "Skilled"). Denormalized for quick access; the canonical value is in the current engagement.</td>
+</tr>
+<tr>
+<td><code>OriginalJoinDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>The very first date the employee joined — preserved even when they leave and rejoin under a new contract. Used for tenure tracking.</td>
+</tr>
+<tr>
+<td><code>JoinDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>The start date of the current engagement/contract. This is the date used for attendance date-range validation.</td>
+</tr>
+<tr>
+<td><code>LeaveBalance</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>Current unused paid leave balance (in days). Incremented at month-end, decremented when a paid leave day is recorded. Default <code>0</code>.</td>
+</tr>
+<tr>
+<td><code>Status</code></td>
+<td>VARCHAR2(20)</td>
+<td>NOT NULL</td>
+<td>Current employment status: <code>Active</code>, <code>Resigned</code>, <code>ContractEnded</code>, <code>Upgraded</code>, <code>Downgraded</code>. Controls visibility in attendance and reports.</td>
+</tr>
+<tr>
+<td><code>ResignDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>Date the employee resigned. Set when status changes to <code>Resigned</code>.</td>
+</tr>
+<tr>
+<td><code>ContractEndDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>Date the current contract expires. Set when status changes to <code>ContractEnded</code>.</td>
+</tr>
+<tr>
+<td><code>CurrentEngagementId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>EmployeeEngagements.Id</code>. Points to the employee's most recent/active engagement record. NULL if the employee has no active engagement.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>Department</code> → <code>Divisions.Name</code></li>
+<li><code>CurrentEngagementId</code> → <code>EmployeeEngagements.Id</code> (circular reference — added via <code>ALTER TABLE</code> after engagements table is created)</li>
+<li>Referenced by <strong><code>EmployeeEngagements.EmpID</code></strong></li>
+<li>Referenced by <strong><code>Attendance.EmpID</code></strong></li>
+<li>Referenced by <strong><code>CalculationOverrides.EmpID</code></strong></li>
+<li>Referenced by <strong><code>EmployeeActionLogs.EmpMasterId</code></strong></li>
+<li>Referenced by <strong><code>AttendanceRemarks.EmpID</code></strong></li>
+</ul>
+<hr/>
+<h2 id="11-employeeengagements">11. <code>EmployeeEngagements</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Tracks each <strong>employment stint</strong> of an employee. An employee can have multiple engagements over time — each time they join under a new contract period, a new engagement row is created. The engagement records the exact contract, vendor, category, and date range for that specific stint. This is the core linking table that ties employees to contracts.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_EmployeeEngagements</code> + <code>TRG_EmployeeEngagements</code>.</td>
+</tr>
+<tr>
+<td><code>EmpID</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td>FK → <code>Employees.MasterId</code>. Which employee this engagement belongs to.</td>
+</tr>
+<tr>
+<td><code>ContractPeriodId</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>FK → <code>ContractPeriods.Id</code>. Which contract period this employment stint falls under.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>Skill category for this engagement (e.g., "Skilled"). May differ from the employee's current category if they were upgraded/downgraded.</td>
+</tr>
+<tr>
+<td><code>VendorId</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td>FK → <code>Vendors.Id</code>. The vendor who supplied/manages this employee in this engagement.</td>
+</tr>
+<tr>
+<td><code>Department</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Division/department for this specific engagement. May differ from current department if transferred.</td>
+</tr>
+<tr>
+<td><code>StartDate</code></td>
+<td>DATE</td>
+<td>NOT NULL</td>
+<td>The date this engagement started (employee joined under this contract).</td>
+</tr>
+<tr>
+<td><code>EndDate</code></td>
+<td>DATE</td>
+<td>YES</td>
+<td>The date this engagement ended. NULL means the engagement is still active.</td>
+</tr>
+<tr>
+<td><code>EndReason</code></td>
+<td>VARCHAR2(50)</td>
+<td>YES</td>
+<td>Why the engagement ended: <code>Resigned</code>, <code>ContractEnded</code>, <code>Upgraded</code>, <code>Downgraded</code>, <code>CarriedOver</code>.</td>
+</tr>
+<tr>
+<td><code>IsCarriedOver</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td><code>1</code> = this engagement was automatically created when the employee carried over from a previous contract period. <code>0</code> = fresh engagement.</td>
+</tr>
+<tr>
+<td><code>PrevEngagementId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>EmployeeEngagements.Id</code> (self-referencing). If <code>IsCarriedOver = 1</code>, this points to the engagement in the previous contract period that this one continues from. Creates a linked chain of engagements.</td>
+</tr>
+<tr>
+<td><code>EmployeeId</code></td>
+<td>VARCHAR2(50)</td>
+<td>YES</td>
+<td>The employee's official ID as assigned in this engagement. May differ from <code>Employees.ID</code> in some carry-over scenarios.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>EmpID</code> → <code>Employees.MasterId</code></li>
+<li><code>ContractPeriodId</code> → <code>ContractPeriods.Id</code></li>
+<li><code>VendorId</code> → <code>Vendors.Id</code></li>
+<li><code>PrevEngagementId</code> → <code>EmployeeEngagements.Id</code> (self-join)</li>
+<li>Referenced by <strong><code>Employees.CurrentEngagementId</code></strong></li>
+<li>Referenced by <strong><code>Attendance.EngagementId</code></strong></li>
+<li>Referenced by <strong><code>CalculationOverrides.EngagementId</code></strong></li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_EmployeeEngagements</code> + <code>TRG_EmployeeEngagements</code>.</p>
+<hr/>
+<h2 id="12-attendance">12. <code>Attendance</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: The <strong>core table of the entire system</strong> — stores one row per employee per calendar day (within their active period). Every cell the admin fills on the attendance grid is stored here. Each row captures what happened on a specific day for a specific employee: were they present, on leave, on holiday, or absent?</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_Attendance</code> + <code>TRG_Attendance</code>.</td>
+</tr>
+<tr>
+<td><code>EmpID</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td>FK → <code>Employees.MasterId</code>. Which employee this record is for.</td>
+</tr>
+<tr>
+<td><code>EngagementId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>EmployeeEngagements.Id</code>. Which engagement was active on this day. Populated when the record is saved.</td>
+</tr>
+<tr>
+<td><code>ContractPeriodId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>ContractPeriods.Id</code>. Which contract period this attendance day falls under.</td>
+</tr>
+<tr>
+<td><code>Year</code></td>
+<td>NUMBER(4)</td>
+<td>NOT NULL</td>
+<td>Calendar year of the attendance record (e.g., 2026).</td>
+</tr>
+<tr>
+<td><code>Month</code></td>
+<td>NUMBER(2)</td>
+<td>NOT NULL</td>
+<td>Calendar month 1–12 of the attendance record.</td>
+</tr>
+<tr>
+<td><code>Day</code></td>
+<td>NUMBER(2)</td>
+<td>NOT NULL</td>
+<td>Calendar day 1–31 of the attendance record.</td>
+</tr>
+<tr>
+<td><code>StatusValue</code></td>
+<td>NUMBER(1)</td>
+<td>YES</td>
+<td><strong>The attendance value:</strong> <code>0</code> = Absent, <code>1</code> = Present, <code>0.5</code> (stored as a number) = Half-day (if applicable). NULL = not yet filled.</td>
+</tr>
+<tr>
+<td><code>LeaveType</code></td>
+<td>VARCHAR2(50)</td>
+<td>YES</td>
+<td>Type of leave if the day is a leave day: <code>PaidLeave</code>, <code>UnpaidLeave</code>, <code>SickLeave</code>, etc. NULL if not a leave day.</td>
+</tr>
+<tr>
+<td><code>IsHoliday</code></td>
+<td>NUMBER(1)</td>
+<td>YES</td>
+<td><code>1</code> = this day is a public holiday (marked by admin). <code>0</code> = normal working day.</td>
+</tr>
+<tr>
+<td><code>AutoSat</code></td>
+<td>NUMBER(1)</td>
+<td>YES</td>
+<td><code>1</code> = this is a Saturday that was automatically counted as absent due to the "2 Saturdays = 1 day deducted" rule. <code>0</code> = not an auto-Saturday.</td>
+</tr>
+<tr>
+<td><code>Remarks</code></td>
+<td>VARCHAR2(500)</td>
+<td>YES</td>
+<td>Free-text remarks — populated when admin manually overrides a Saturday attendance (right-click edit feature). Shown as a tooltip on the overridden cell.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique Constraint</strong>: <code>(EmpID, Year, Month, Day)</code> — an employee can have at most one attendance record per day.</p>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>EmpID</code> → <code>Employees.MasterId</code></li>
+<li><code>EngagementId</code> → <code>EmployeeEngagements.Id</code></li>
+<li><code>ContractPeriodId</code> → <code>ContractPeriods.Id</code></li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_Attendance</code> + <code>TRG_Attendance</code>.</p>
+<hr/>
+<h2 id="13-calculationwages">13. <code>CalculationWages</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Stores the <strong>wage rate</strong> (daily rate in currency) for each skill category for a given month and year. The salary calculation page uses this to compute total wages: <code>WageRate × AttendedDays = TotalWage</code> for each employee. Admins set these rates before running the month-end calculation.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Year</code></td>
+<td>NUMBER(4)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> The year this wage rate applies to.</td>
+</tr>
+<tr>
+<td><code>Month</code></td>
+<td>NUMBER(2)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> The month (1–12) this wage rate applies to.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> FK → <code>Categories.Name</code>. Which skill category this rate applies to.</td>
+</tr>
+<tr>
+<td><code>WageRate</code></td>
+<td>NUMBER(10,2)</td>
+<td>NOT NULL</td>
+<td>The daily wage rate in currency for this category in this month (e.g., 650.00).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Primary Key</strong>: <code>(Year, Month, Category)</code> — one rate per category per month.</p>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>Category</code> implicitly references <code>Categories.Name</code> (no FK constraint, but must match a valid category).</li>
+<li>Read by <code>Calculation.aspx.cs</code> when computing monthly payroll.</li>
+</ul>
+<hr/>
+<h2 id="14-calculationoverrides">14. <code>CalculationOverrides</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Allows admins to <strong>manually override the final number of attended days</strong> used in salary calculation for a specific employee in a specific month. If the calculated attendance count is wrong for any reason, the admin can set a custom <code>FinalDays</code> value here which takes priority over the auto-calculated count.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Year</code></td>
+<td>NUMBER(4)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> The year of the override.</td>
+</tr>
+<tr>
+<td><code>Month</code></td>
+<td>NUMBER(2)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> The month (1–12) of the override.</td>
+</tr>
+<tr>
+<td><code>Category</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> The category of the employee for this override.</td>
+</tr>
+<tr>
+<td><code>EmpID</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><strong>Part of Composite PK.</strong> FK → <code>Employees.MasterId</code>. The employee being overridden.</td>
+</tr>
+<tr>
+<td><code>EngagementId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>EmployeeEngagements.Id</code>. The engagement this override applies to.</td>
+</tr>
+<tr>
+<td><code>ContractPeriodId</code></td>
+<td>NUMBER</td>
+<td>YES</td>
+<td>FK → <code>ContractPeriods.Id</code>. The contract period context.</td>
+</tr>
+<tr>
+<td><code>FinalDays</code></td>
+<td>NUMBER(3)</td>
+<td>YES</td>
+<td>The manually set number of days to use for this employee's calculation. Overrides the auto-count from <code>Attendance</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Primary Key</strong>: <code>(Year, Month, Category, EmpID)</code>.</p>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>EmpID</code> → <code>Employees.MasterId</code></li>
+<li><code>EngagementId</code> → <code>EmployeeEngagements.Id</code></li>
+<li><code>ContractPeriodId</code> → <code>ContractPeriods.Id</code></li>
+</ul>
+<hr/>
+<h2 id="15-employeeactionlogs">15. <code>EmployeeActionLogs</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: A detailed <strong>audit trail for every change made to employee records</strong>. Every time an employee is added, edited, resigned, upgraded, downgraded, or their engagement changed, a row is inserted here. The <code>PreState</code> and <code>PostState</code> columns store JSON snapshots of the employee record before and after the change, enabling a full undo history.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_EmployeeActionLogs</code> + <code>TRG_EmployeeActionLogs</code>.</td>
+</tr>
+<tr>
+<td><code>ActionTime</code></td>
+<td>TIMESTAMP</td>
+<td>NOT NULL</td>
+<td>When the action occurred. Defaults to <code>SYSTIMESTAMP</code> (current DB time).</td>
+</tr>
+<tr>
+<td><code>ActionType</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td>Type of change: <code>ADD</code>, <code>EDIT</code>, <code>RESIGN</code>, <code>UPGRADE</code>, <code>DOWNGRADE</code>, <code>CONTRACT_END</code>, <code>UNDO</code>, <code>CARRYOVER</code>, etc.</td>
+</tr>
+<tr>
+<td><code>EmpMasterId</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td>The <code>MasterId</code> of the employee who was affected. Not a FK constraint (to allow keeping log even if employee record changes).</td>
+</tr>
+<tr>
+<td><code>Description</code></td>
+<td>VARCHAR2(500)</td>
+<td>NOT NULL</td>
+<td>Human-readable summary of what changed (e.g., "Changed department from D-KRM to D-Admin").</td>
+</tr>
+<tr>
+<td><code>PreState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>JSON snapshot of the employee record <strong>before</strong> the action. Used to power the Undo feature.</td>
+</tr>
+<tr>
+<td><code>PostState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>JSON snapshot of the employee record <strong>after</strong> the action. Used to power the Redo/view history.</td>
+</tr>
+<tr>
+<td><code>IsUndone</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td><code>1</code> = this action has been undone via the undo button. <code>0</code> = active. Undone records are greyed out in the action log view.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>EmpMasterId</code> logically refers to <code>Employees.MasterId</code> (no enforced FK).</li>
+<li>Viewed via the Employee page's action log panel.</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_EmployeeActionLogs</code> + <code>TRG_EmployeeActionLogs</code>.</p>
+<hr/>
+<h2 id="16-actionlog">16. <code>ActionLog</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: A <strong>general-purpose system action log</strong> for tracking non-employee-specific system events. Used for logging things like bulk attendance saves, settings changes, calculation runs, and other admin operations that don't pertain to a single employee.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_ActionLog</code> + <code>TRG_ActionLog</code>.</td>
+</tr>
+<tr>
+<td><code>ActionTime</code></td>
+<td>TIMESTAMP</td>
+<td>NOT NULL</td>
+<td>Timestamp of the action. Defaults to <code>SYSTIMESTAMP</code>.</td>
+</tr>
+<tr>
+<td><code>ActionType</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>Category of the action (e.g., <code>BULK_ATTENDANCE_SAVE</code>, <code>SETTINGS_CHANGE</code>, <code>CALC_RUN</code>).</td>
+</tr>
+<tr>
+<td><code>PerformedBy</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>PCNO of the admin or user who performed the action.</td>
+</tr>
+<tr>
+<td><code>TargetId</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>The primary identifier of the entity affected (e.g., contract period ID, employee ID).</td>
+</tr>
+<tr>
+<td><code>Description</code></td>
+<td>VARCHAR2(1000)</td>
+<td>YES</td>
+<td>Human-readable description of what happened.</td>
+</tr>
+<tr>
+<td><code>PreState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>JSON of the state before the action (if applicable).</td>
+</tr>
+<tr>
+<td><code>PostState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>JSON of the state after the action (if applicable).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>: Standalone log table. No FK constraints.</p>
+<p><strong>Auto-increment</strong>: <code>SEQ_ActionLog</code> + <code>TRG_ActionLog</code>.</p>
+<hr/>
+<h2 id="17-adminactionlog">17. <code>AdminActionLog</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: An <strong>admin-specific action log</strong> — similar to <code>ActionLog</code> but used specifically for actions performed through the admin attendance grid (e.g., saving a month's attendance data, marking bulk holidays). Kept separate from <code>ActionLog</code> to allow independent querying of admin attendance grid operations.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_AdminActionLog</code> + <code>TRG_AdminActionLog</code>.</td>
+</tr>
+<tr>
+<td><code>ActionTime</code></td>
+<td>TIMESTAMP</td>
+<td>NOT NULL</td>
+<td>When the admin action occurred. Defaults to <code>SYSTIMESTAMP</code>.</td>
+</tr>
+<tr>
+<td><code>ActionType</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>Type of admin action (e.g., <code>SAVE_ATTENDANCE</code>, <code>MARK_HOLIDAY</code>).</td>
+</tr>
+<tr>
+<td><code>PerformedBy</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>PCNO of the admin who performed this action.</td>
+</tr>
+<tr>
+<td><code>TargetId</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>Reference to the affected resource (e.g., contract period ID or employee ID).</td>
+</tr>
+<tr>
+<td><code>Description</code></td>
+<td>VARCHAR2(1000)</td>
+<td>YES</td>
+<td>Description of what was done.</td>
+</tr>
+<tr>
+<td><code>PreState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>Previous state as JSON.</td>
+</tr>
+<tr>
+<td><code>PostState</code></td>
+<td>CLOB</td>
+<td>YES</td>
+<td>New state as JSON.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>: Standalone log table. No FK constraints.</p>
+<p><strong>Auto-increment</strong>: <code>SEQ_AdminActionLog</code> + <code>TRG_AdminActionLog</code>.</p>
+<hr/>
+<h2 id="18-attendance-audit-log">18. <code>Attendance_Audit_Log</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Tracks <strong>every individual change to a single attendance cell</strong> — when a specific day's status was changed, what it was before, what it became, and who changed it. This is more granular than <code>AdminActionLog</code> — one row per cell edit rather than one row per bulk save. Useful for investigating discrepancies in specific employee attendance on specific dates.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_AttendanceAuditLog</code> + <code>TRG_AttendanceAuditLog</code>.</td>
+</tr>
+<tr>
+<td><code>LogTime</code></td>
+<td>TIMESTAMP</td>
+<td>NOT NULL</td>
+<td>Exact timestamp of when this cell was changed. Defaults to <code>SYSTIMESTAMP</code>.</td>
+</tr>
+<tr>
+<td><code>EmpID</code></td>
+<td>VARCHAR2(50)</td>
+<td>YES</td>
+<td><code>MasterId</code> of the employee whose attendance was changed.</td>
+</tr>
+<tr>
+<td><code>Year</code></td>
+<td>NUMBER(4)</td>
+<td>YES</td>
+<td>The year of the attendance cell that was changed.</td>
+</tr>
+<tr>
+<td><code>Month</code></td>
+<td>NUMBER(2)</td>
+<td>YES</td>
+<td>The month of the attendance cell that was changed.</td>
+</tr>
+<tr>
+<td><code>Day</code></td>
+<td>NUMBER(2)</td>
+<td>YES</td>
+<td>The day of the attendance cell that was changed.</td>
+</tr>
+<tr>
+<td><code>OldValue</code></td>
+<td>NUMBER(1)</td>
+<td>YES</td>
+<td>The <code>StatusValue</code> before the change (0 = Absent, 1 = Present).</td>
+</tr>
+<tr>
+<td><code>NewValue</code></td>
+<td>NUMBER(1)</td>
+<td>YES</td>
+<td>The <code>StatusValue</code> after the change.</td>
+</tr>
+<tr>
+<td><code>ChangedBy</code></td>
+<td>VARCHAR2(100)</td>
+<td>YES</td>
+<td>PCNO of the admin who made the change.</td>
+</tr>
+<tr>
+<td><code>Reason</code></td>
+<td>VARCHAR2(500)</td>
+<td>YES</td>
+<td>Optional reason or note for the change (e.g., "Saturday overtime correction").</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>: References <code>Attendance</code> logically via <code>(EmpID, Year, Month, Day)</code>, but no FK constraint (to keep the audit log independent of live attendance data).</p>
+<hr/>
+<h2 id="19-attendanceremarks">19. <code>AttendanceRemarks</code></h2>
+<p><strong>Schema</strong>: <code>SYSTEM</code><br/>
+<strong>Purpose</strong>: Stores <strong>correction requests and remarks</strong> sent by regular users to the admin. When a regular user notices that an employee's attendance is wrong (e.g., an employee was present but wasn't marked), they submit a remark via the Remarks page. The remark appears in the admin's notification bell and Remarks Inbox. The admin can mark it as read or delete it after reviewing.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td>NUMBER</td>
+<td>NOT NULL</td>
+<td><strong>Primary Key.</strong> Auto-incremented via <code>SEQ_AttendanceRemarks</code> + <code>TRG_AttendanceRemarks</code>.</td>
+</tr>
+<tr>
+<td><code>SubmittedBy</code></td>
+<td>VARCHAR2(100)</td>
+<td>NOT NULL</td>
+<td>PCNO of the regular user who sent this remark. Logically → <code>AppUsers.PCNO</code>.</td>
+</tr>
+<tr>
+<td><code>SenderName</code></td>
+<td>VARCHAR2(200)</td>
+<td>NOT NULL</td>
+<td>Display name of the sender at the time of submission (denormalized to avoid join issues if user account changes).</td>
+</tr>
+<tr>
+<td><code>EmpID</code></td>
+<td>VARCHAR2(50)</td>
+<td>NOT NULL</td>
+<td><code>MasterId</code> of the employee this remark is about. Logically → <code>Employees.MasterId</code>.</td>
+</tr>
+<tr>
+<td><code>RemarkDate</code></td>
+<td>DATE</td>
+<td>NOT NULL</td>
+<td>The specific attendance date the remark refers to (e.g., "2026-06-05" if reporting a missed attendance on that day). Must be within the employee's contract period.</td>
+</tr>
+<tr>
+<td><code>Message</code></td>
+<td>VARCHAR2(1000)</td>
+<td>NOT NULL</td>
+<td>The actual remark/request text written by the user (max 1000 characters).</td>
+</tr>
+<tr>
+<td><code>IsRead</code></td>
+<td>NUMBER(1)</td>
+<td>NOT NULL</td>
+<td><code>0</code> = unread (new, shown in admin's notification bell badge). <code>1</code> = read (admin has viewed it). Default <code>0</code>.</td>
+</tr>
+<tr>
+<td><code>CreatedAt</code></td>
+<td>TIMESTAMP</td>
+<td>NOT NULL</td>
+<td>When the remark was submitted. Defaults to <code>SYSTIMESTAMP</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relationships</strong>:</p>
+<ul>
+<li><code>SubmittedBy</code> logically → <code>AppUsers.PCNO</code> (no enforced FK)</li>
+<li><code>EmpID</code> logically → <code>Employees.MasterId</code> (no enforced FK — remarks are kept even if employee is deleted)</li>
+<li>Read by <code>Site.Master.cs</code> to show the unread count badge on the admin notification bell.</li>
+<li>Managed via <code>Remarks.aspx</code> (admin inbox) and <code>UserRemarks.aspx</code> (user's sent list).</li>
+</ul>
+<p><strong>Auto-increment</strong>: <code>SEQ_AttendanceRemarks</code> + <code>TRG_AttendanceRemarks</code>.</p>
+<hr/>
+<h2 id="20-relationship-quick-reference-map">20. Relationship Quick-Reference Map</h2>
+<pre><code>hrdata.empdetails
+  └── Read at login → no FK links to app tables
+  └── PCNO matches AppUsers.PCNO
+
+AppUsers (PCNO)
+  ├── → UserDivisions.PCNO          [1 user : many division permissions]
+  └── → AttendanceRemarks.SubmittedBy [1 user : many remarks sent]
+
+Divisions (Name)
+  ├── → UserDivisions.DivisionName  [1 division : many users]
+  └── → Employees.Department        [1 division : many employees]
+
+Categories (Name)
+  ├── → ContractPeriods.Category    [1 category : many contracts]
+  ├── → EmployeeEngagements.Category
+  ├── → CalculationWages.Category
+  └── → CalculationOverrides.Category
+
+Vendors (Id)
+  ├── → ContractPeriods.VendorId    [1 vendor : many contracts]
+  ├── → ContractPeriodVendors.VendorId
+  └── → EmployeeEngagements.VendorId
+
+ContractPeriods (Id)
+  ├── → ContractPeriodVendors.ContractPeriodId
+  ├── → EmployeeEngagements.ContractPeriodId  [1 contract : many stints]
+  ├── → Attendance.ContractPeriodId           [1 contract : many days]
+  └── → CalculationOverrides.ContractPeriodId
+
+Employees (MasterId)
+  ├── → EmployeeEngagements.EmpID    [1 employee : many stints]
+  ├── → Attendance.EmpID             [1 employee : many days]
+  ├── → CalculationOverrides.EmpID
+  ├── → EmployeeActionLogs.EmpMasterId
+  └── → AttendanceRemarks.EmpID
+
+EmployeeEngagements (Id)
+  ├── ← Employees.CurrentEngagementId  [current active stint]
+  ├── → EmployeeEngagements.PrevEngagementId [chain of stints]
+  ├── → Attendance.EngagementId
+  └── → CalculationOverrides.EngagementId
+
+Attendance (Id)
+  └── Audited by → Attendance_Audit_Log.(EmpID, Year, Month, Day)
+
+AttendanceRemarks (Id)
+  └── Drives notification badge on admin's Site.Master navbar
+</code></pre>
+<hr/>
+<h2 id="auto-increment-summary">Auto-Increment Summary</h2>
+<p>Every table that uses a numeric primary key uses the <strong>Oracle 11g-compatible</strong> pattern:</p>
+<pre><code class="language-sql">-- Example for any table
+CREATE SEQUENCE SEQ_TableName START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE OR REPLACE TRIGGER TRG_TableName
+BEFORE INSERT ON TableName
+FOR EACH ROW
+BEGIN
+    IF :NEW.Id IS NULL THEN
+        SELECT SEQ_TableName.NEXTVAL INTO :NEW.Id FROM DUAL;
+    END IF;
+END;
+/
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: <code>GENERATED ALWAYS AS IDENTITY</code> is <strong>NOT used</strong> as it requires Oracle 12c+. This project runs on Oracle 11g.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Sequence</th>
+<th>Trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Divisions</td>
+<td>SEQ_Divisions</td>
+<td>TRG_Divisions</td>
+</tr>
+<tr>
+<td>Categories</td>
+<td>SEQ_Categories</td>
+<td>TRG_Categories</td>
+</tr>
+<tr>
+<td>Vendors</td>
+<td>SEQ_Vendors</td>
+<td>TRG_Vendors</td>
+</tr>
+<tr>
+<td>ContractPeriods</td>
+<td>SEQ_ContractPeriods</td>
+<td>TRG_ContractPeriods</td>
+</tr>
+<tr>
+<td>ContractPeriodVendors</td>
+<td>SEQ_ContractPeriodVendors</td>
+<td>TRG_ContractPeriodVendors</td>
+</tr>
+<tr>
+<td>EmployeeEngagements</td>
+<td>SEQ_EmployeeEngagements</td>
+<td>TRG_EmployeeEngagements</td>
+</tr>
+<tr>
+<td>Attendance</td>
+<td>SEQ_Attendance</td>
+<td>TRG_Attendance</td>
+</tr>
+<tr>
+<td>EmployeeActionLogs</td>
+<td>SEQ_EmployeeActionLogs</td>
+<td>TRG_EmployeeActionLogs</td>
+</tr>
+<tr>
+<td>ActionLog</td>
+<td>SEQ_ActionLog</td>
+<td>TRG_ActionLog</td>
+</tr>
+<tr>
+<td>AdminActionLog</td>
+<td>SEQ_AdminActionLog</td>
+<td>TRG_AdminActionLog</td>
+</tr>
+<tr>
+<td>Attendance_Audit_Log</td>
+<td>SEQ_AttendanceAuditLog</td>
+<td>TRG_AttendanceAuditLog</td>
+</tr>
+<tr>
+<td>AttendanceRemarks</td>
+<td>SEQ_AttendanceRemarks</td>
+<td>TRG_AttendanceRemarks</td>
+</tr>
+</tbody>
+</table>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>

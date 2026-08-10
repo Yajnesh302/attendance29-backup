@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph LEAVE_CALC["Leave Balance Calculation per Month"]
+        INITIAL["Initial Leave Balance<br/>(from EmployeeLeaveCredits)"] --> SUB_HIST["- Historical Leaves<br/>(Full Paid + 0.5 × Half Days)"]
+        SUB_HIST --> OPENING["Opening Balance"]
+        
+        OPENING --> SUB_CURRENT["- Current Month Paid Leaves<br/>- 0.5 × Legacy Half-Days"]
+        SUB_CURRENT --> CLOSING["Closing Balance"]
+    end
+    
+    subgraph HALF_DAY["Half-Day Pairing Logic"]
+        HD1["1st Half-Day<br/>LeaveType = Carried<br/>StatusValue = 1<br/>(counts as present)"] --> WAIT
+        WAIT["Wait for 2nd Half-Day"]
+        HD2{"2nd Half-Day"}
+        HD2 -->|"Paid"| PAID["LeaveType = Paired Paid<br/>StatusValue = 1<br/>(counts as present,<br/>deducts from leave balance)"]
+        HD2 -->|"Unpaid"| UNPAID["LeaveType = Paired Unpaid<br/>StatusValue = 0<br/>(counts as absent)"]
+        
+        PAID --> REMARK["Ledger Remark:<br/>'2 half days: date1 & date2'"]
+        UNPAID --> REMARK
+    end

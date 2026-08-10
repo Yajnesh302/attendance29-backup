@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph ACTIVE["Active"]
+        Working -->|Upgrade| Upgraded
+        Working -->|Downgrade| Downgraded
+        Working -->|Transfer| Transferred
+        Upgraded --> Working
+        Downgraded --> Working
+        Transferred --> Working
+    end
+
+    Start((Start)) -->|Register Employee| NewEmployee
+    NewEmployee -->|Enroll in Contract| ACTIVE
+    ACTIVE -->|Resigns| Resigned
+    ACTIVE -->|Contract Ends| ContractEnded
+    Resigned -->|Re-joining| ACTIVE
+    Resigned -->|Admin Deletes| Deleted
+    ContractEnded -->|New Contract| ACTIVE
+    Deleted --> End((End))

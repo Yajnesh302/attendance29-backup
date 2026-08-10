@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph SETTINGS["Settings Module"]
+        DIV_MGMT["Division Management<br/>Add / Edit / Delete"]
+        CAT_MGMT["Category Management<br/>Add / Edit / Delete"]
+        TEMPLATE["Template Settings<br/>Certificate, SAT Cert,<br/>Covering Letter, Wages"]
+        UNDO["Undo Manager<br/>Rollback employee actions"]
+        BACKUP["Database Backup<br/>Export all tables as JSON"]
+        RESTORE["Database Restore<br/>Import from JSON backup"]
+    end
+    
+    DIV_MGMT --> DIV_CASCADE["Cascades to: Employees"]
+    CAT_MGMT --> CAT_CASCADE["Cascades to: Employees,<br/>CalculationWages,<br/>CalculationOverrides"]
+    
+    TEMPLATE --> TPL_STORE["Stored in: CertificateTemplates"]
+    
+    UNDO --> LOGS["Reads: EmployeeActionLogs<br/>(PreState/PostState JSON)"]
+    UNDO --> RESTORE_STATE["Restores employee + engagement state<br/>from JSON snapshot"]
+    
+    BACKUP --> EXPORT["Exports all tables<br/>in deletion-safe order"]
+    RESTORE --> IMPORT["Imports in insertion-safe order<br/>+ resets sequences"]

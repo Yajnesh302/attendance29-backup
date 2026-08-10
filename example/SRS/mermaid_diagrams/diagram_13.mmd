@@ -1,0 +1,35 @@
+erDiagram
+    hrdata_empdetails ||--o| AppUsers : "PCNO match (no FK)"
+
+    AppUsers ||--o{ UserDivisions : "PCNO"
+    AppUsers ||--o{ AttendanceRemarks : "SubmittedBy"
+
+    Divisions ||--o{ UserDivisions : "Name"
+    Divisions ||--o{ Employees : "Department"
+
+    Categories ||--o{ ContractPeriods : "Category"
+    Categories ||--o{ EmployeeEngagements : "Category"
+    Categories ||--o{ CalculationWages : "Category"
+    Categories ||--o{ CalculationOverrides : "Category"
+
+    Vendors ||--o{ ContractPeriods : "VendorId"
+    Vendors ||--o{ ContractPeriodVendors : "VendorId"
+    Vendors ||--o{ EmployeeEngagements : "VendorId"
+
+    ContractPeriods ||--o{ ContractPeriodVendors : "Id"
+    ContractPeriods ||--o{ ContractExtensions : "Id"
+    ContractPeriods ||--o{ EmployeeEngagements : "ContractPeriodId"
+    ContractPeriods ||--o{ Attendance : "ContractPeriodId"
+    ContractPeriods ||--o{ CalculationOverrides : "ContractPeriodId"
+
+    Employees ||--o{ EmployeeEngagements : "MasterId"
+    Employees ||--o{ Attendance : "MasterId"
+    Employees ||--o{ CalculationOverrides : "EmpID"
+    Employees ||--o{ EmployeeActionLogs : "MasterId"
+    Employees ||--o{ AttendanceRemarks : "EmpID"
+    Employees ||--o{ EmployeeLeaveCredits : "EmpID"
+
+    EmployeeEngagements ||--o| Employees : "CurrentEngagementId"
+    EmployeeEngagements ||--o{ Attendance : "EngagementId"
+    EmployeeEngagements ||--o{ CalculationOverrides : "EngagementId"
+    EmployeeEngagements ||--o{ EmployeeEngagements : "PrevEngagementId (self-ref)"

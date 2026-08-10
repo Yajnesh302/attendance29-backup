@@ -1,0 +1,33 @@
+graph TB
+    subgraph PRESENTATION["PRESENTATION LAYER"]
+        ASPX["ASPX Pages<br/>(Web Forms)"]
+        MASTER["Master Page<br/>(Site.Master)"]
+        UI["UI Components<br/>Bootstrap 4 + AngularJS<br/>+ SB Admin 2"]
+    end
+
+    subgraph BUSINESS["BUSINESS LOGIC LAYER"]
+        CODE_BEHIND["Code-behind (.aspx.cs)"]
+        WEB_METHODS["Web Methods<br/>[WebMethod]"]
+        VALIDATION["Validation Logic<br/>Leave Balance Checks"]
+        ATT_LOGIC["Attendance Logic<br/>Saturday Rule Calc"]
+        CALC_LOGIC["Calculation Logic<br/>Wage Computation"]
+    end
+
+    subgraph DATA_ACCESS["DATA ACCESS LAYER"]
+        DB_HELPER["DBHelper.cs<br/>Connection Management<br/>ExecuteQuery / ExecuteScalar<br/>ExecuteNonQuery"]
+        AD_HELPER["ADHelper.cs<br/>LDAP Authentication"]
+        ACTION_LOGGER["ActionLogger.cs<br/>Audit Trail + Undo"]
+        ORACLE_CLIENT["Oracle.ManagedDataAccess<br/>.NET Data Provider"]
+    end
+
+    subgraph DATA["DATA LAYER"]
+        ORACLE_DB["Oracle Database 11g"]
+        HR_SCHEMA["HRDATA Schema<br/>- empdetails (read-only)"]
+        APP_SCHEMA["SYSTEM Schema<br/>- 20+ application tables"]
+        AD_LDAP["Active Directory / LDAP<br/>(User Authentication)"]
+    end
+
+    PRESENTATION --> BUSINESS
+    BUSINESS --> DATA_ACCESS
+    DATA_ACCESS --> DATA
+    DATA_ACCESS --> AD_LDAP

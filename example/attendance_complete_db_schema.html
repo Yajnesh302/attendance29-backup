@@ -1,0 +1,525 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: transparent;
+  font-family: "Anthropic Sans", ui-sans-serif, system-ui, sans-serif;
+  padding: 16px 10px 32px;
+  color: var(--color-text-primary);
+}
+
+/* ── Section labels ── */
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin: 20px 0 7px;
+  padding-left: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-tertiary);
+}
+
+/* ── Grids ── */
+.grid { display: grid; gap: 10px; }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g1half { grid-template-columns: 1fr 1.6fr; }
+
+/* ── Table card ── */
+.tc {
+  border-radius: 9px;
+  overflow: hidden;
+  border: 1.5px solid var(--tc-border);
+  font-size: 11px;
+}
+.th {
+  background: var(--tc-head);
+  color: var(--tc-head-text);
+  padding: 6px 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.01em;
+}
+.th-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tc-head-text); opacity: .7; flex-shrink:0; }
+.tb-new-badge {
+  margin-left: auto;
+  font-size: 8px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.22);
+  color: var(--tc-head-text);
+  padding: 1px 6px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.fr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3.5px 11px;
+  border-top: 1px solid var(--tc-row-border);
+  background: var(--tc-row-bg);
+}
+.fn { color: var(--color-text-primary); font-weight: 400; display: flex; align-items: center; gap: 2px; }
+.ft { color: var(--color-text-tertiary); font-size: 10px; }
+
+.badge {
+  font-size: 8.5px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 3px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.bpk { background: var(--tc-head); color: var(--tc-head-text); }
+.bfk { background: var(--tc-fk-bg); color: var(--tc-fk-text); }
+
+/* ── Color themes ── */
+/* Purple - Auth */
+.pu { --tc-head:#3C3489; --tc-head-text:#EEEDFE; --tc-border:#AFA9EC; --tc-row-border:rgba(174,169,236,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(174,169,236,.2); --tc-fk-text:#3C3489; }
+/* Green - Vendor/Contract */
+.gr { --tc-head:#085041; --tc-head-text:#E1F5EE; --tc-border:#5DCAA5; --tc-row-border:rgba(93,202,165,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(93,202,165,.2); --tc-fk-text:#085041; }
+/* Blue - Employee */
+.bl { --tc-head:#0C447C; --tc-head-text:#E6F1FB; --tc-border:#85B7EB; --tc-row-border:rgba(133,183,235,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(133,183,235,.2); --tc-fk-text:#0C447C; }
+/* Amber - Attendance/Wages */
+.am { --tc-head:#633806; --tc-head-text:#FAEEDA; --tc-border:#EF9F27; --tc-row-border:rgba(239,159,39,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(239,159,39,.2); --tc-fk-text:#633806; }
+/* Gray - Lookup */
+.gy { --tc-head:#444441; --tc-head-text:#F1EFE8; --tc-border:#B4B2A9; --tc-row-border:rgba(180,178,169,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(180,178,169,.2); --tc-fk-text:#444441; }
+/* Teal - Contract Period (NEW core table) */
+.te { --tc-head:#0B5C6B; --tc-head-text:#E0F5F8; --tc-border:#4DC4D8; --tc-row-border:rgba(77,196,216,.15); --tc-row-bg:var(--color-background-secondary); --tc-fk-bg:rgba(77,196,216,.2); --tc-fk-text:#0B5C6B; }
+
+@media (prefers-color-scheme: dark) {
+  .pu { --tc-fk-text:#AFA9EC; }
+  .gr { --tc-fk-text:#5DCAA5; }
+  .bl { --tc-fk-text:#85B7EB; }
+  .am { --tc-fk-text:#EF9F27; }
+  .gy { --tc-fk-text:#B4B2A9; }
+  .te { --tc-fk-text:#4DC4D8; }
+}
+
+/* ── Flow diagram ── */
+.flow {
+  margin-top: 22px;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border-tertiary);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.flow-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: 12px;
+}
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.flow-box {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  flex-shrink: 0;
+}
+.flow-arrow {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+.flow-note {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-left: 6px;
+}
+
+/* ── Relations table ── */
+.rel-wrap {
+  margin-top: 20px;
+  border: 1px solid var(--color-border-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.rel-head {
+  background: var(--color-background-secondary);
+  padding: 7px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  display: grid;
+  grid-template-columns: 200px 30px 200px 1fr;
+  gap: 4px;
+}
+.rel-row {
+  display: grid;
+  grid-template-columns: 200px 30px 200px 1fr;
+  gap: 4px;
+  align-items: center;
+  padding: 5px 14px;
+  border-top: 1px solid var(--color-border-tertiary);
+  font-size: 11px;
+}
+.rel-from { font-weight: 500; color: var(--color-text-primary); }
+.rel-arr { color: var(--color-text-tertiary); text-align: center; }
+.rel-to { font-weight: 500; color: var(--color-text-primary); }
+.rel-desc { color: var(--color-text-secondary); font-size: 10px; }
+.card { font-size: 8.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+.c1 { background:#E1F5EE; color:#085041; }
+.cn { background:#E6F1FB; color:#0C447C; }
+@media (prefers-color-scheme: dark) {
+  .c1 { background:#085041; color:#9FE1CB; }
+  .cn { background:#0C447C; color:#B5D4F4; }
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  margin-top: 16px; font-size: 11px;
+  color: var(--color-text-secondary);
+}
+.leg { display: flex; align-items: center; gap: 5px; }
+.ldot { width: 10px; height: 10px; border-radius: 3px; flex-shrink:0; }
+
+/* EndReason note */
+.endreason {
+  margin-top: 10px;
+  background: var(--color-background-secondary);
+  border-left: 3px solid #4DC4D8;
+  border-radius: 0 8px 8px 0;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+.endreason strong { color: var(--color-text-primary); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- hrdata DB -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="section-label">📁 hrdata DB — Company directory (read-only, sync on login)</div>
+<div class="grid g2" style="max-width:400px">
+  <div class="tc gy">
+    <div class="th"><div class="th-dot"></div>empdetails</div>
+    <div class="fr"><div class="fn">PCNO<span class="badge bpk">PK</span></div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">NAME</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">DESIGNATION</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">DIVNAME</div><span class="ft">VARCHAR</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- AttendanceDB -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="section-label" style="margin-top:24px">📁 AttendanceDB — Main application database</div>
+
+<!-- Auth -->
+<div class="section-label">Identity &amp; Access</div>
+<div class="grid g3">
+  <div class="tc pu">
+    <div class="th"><div class="th-dot"></div>AppUsers</div>
+    <div class="fr"><div class="fn">PCNO<span class="badge bpk">PK</span></div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">Name</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">Role</div><span class="ft">INT (0=User,1=Admin)</span></div>
+  </div>
+  <div class="tc pu">
+    <div class="th"><div class="th-dot"></div>UserDivisions</div>
+    <div class="fr"><div class="fn">PCNO<span class="badge bpk">PK</span><span class="badge bfk">FK</span></div><span class="ft">VARCHAR→AppUsers</span></div>
+    <div class="fr"><div class="fn">DivisionName<span class="badge bpk">PK</span><span class="badge bfk">FK</span></div><span class="ft">VARCHAR→Divisions</span></div>
+  </div>
+  <div class="tc gy">
+    <div class="th"><div class="th-dot"></div>Divisions</div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Name</div><span class="ft">VARCHAR UNIQUE</span></div>
+  </div>
+</div>
+
+<!-- Vendor -->
+<div class="section-label">Vendor</div>
+<div class="grid g2" style="max-width:540px">
+  <div class="tc gr">
+    <div class="th"><div class="th-dot"></div>Vendors</div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Name</div><span class="ft">VARCHAR UNIQUE</span></div>
+    <div class="fr"><div class="fn">ContactName</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">ContactPhone</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">Address</div><span class="ft">TEXT</span></div>
+    <div class="fr"><div class="fn">IsActive</div><span class="ft">BOOLEAN</span></div>
+  </div>
+  <div class="tc gy">
+    <div class="th"><div class="th-dot"></div>Categories</div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Name</div><span class="ft">VARCHAR UNIQUE</span></div>
+    <div class="fr" style="padding-top:6px;padding-bottom:6px"><div class="fn" style="font-size:10px;color:var(--color-text-tertiary)">Skilled / Semi-Skilled / Unskilled</div></div>
+  </div>
+</div>
+
+<!-- CONTRACT PERIODS — THE CORE NEW TABLE -->
+<div class="section-label">Contract Periods <span style="font-size:9px;background:#0B5C6B;color:#E0F5F8;border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:700;letter-spacing:0.04em">NEW — CORE</span></div>
+<div class="grid g2">
+  <div class="tc te">
+    <div class="th"><div class="th-dot"></div>ContractPeriods<div class="tb-new-badge">NEW</div></div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Category<span class="badge bfk">FK</span></div><span class="ft">VARCHAR → Categories</span></div>
+    <div class="fr"><div class="fn">VendorId<span class="badge bfk">FK</span></div><span class="ft">INT → Vendors</span></div>
+    <div class="fr"><div class="fn">StartDate</div><span class="ft">DATE — bid win date</span></div>
+    <div class="fr"><div class="fn">EndDate</div><span class="ft">DATE nullable — NULL=active</span></div>
+    <div class="fr"><div class="fn">Status</div><span class="ft">ENUM: Active / Closed</span></div>
+    <div class="fr"><div class="fn">Notes</div><span class="ft">TEXT — bid details</span></div>
+    <div class="fr" style="padding:6px 11px; background:rgba(77,196,216,.07)">
+      <span style="font-size:10px;color:var(--color-text-tertiary)">
+        UNIQUE (Category, StartDate) — one period per category at a time
+      </span>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+
+    <div class="tc te">
+      <div class="th"><div class="th-dot"></div>ContractPeriodVendors<div class="tb-new-badge">NEW</div></div>
+      <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+      <div class="fr"><div class="fn">ContractPeriodId<span class="badge bfk">FK</span></div><span class="ft">INT → ContractPeriods</span></div>
+      <div class="fr"><div class="fn">VendorId<span class="badge bfk">FK</span></div><span class="ft">INT → Vendors</span></div>
+      <div class="fr"><div class="fn">Category</div><span class="ft">VARCHAR (which category vendor won)</span></div>
+      <div class="fr"><div class="fn">IsActive</div><span class="ft">BOOLEAN — active in this period</span></div>
+      <div class="fr" style="padding:6px 11px;background:rgba(77,196,216,.07)">
+        <span style="font-size:10px;color:var(--color-text-tertiary)">
+          Tracks which vendor is active for which category in this period
+        </span>
+      </div>
+    </div>
+
+    <div class="endreason">
+      <strong>How a new period starts:</strong><br>
+      1. Admin enters bid StartDate + selects winning Vendor per category<br>
+      2. Previous period for that category → Status = <strong>Closed</strong>, EndDate set<br>
+      3. New ContractPeriod row inserted → Status = <strong>Active</strong><br>
+      4. All active employees auto-carried to new EmployeeEngagement rows
+    </div>
+
+  </div>
+</div>
+
+<!-- Employee -->
+<div class="section-label">Employee</div>
+<div class="grid g2">
+  <div class="tc bl">
+    <div class="th"><div class="th-dot"></div>Employees</div>
+    <div class="fr"><div class="fn">ID<span class="badge bpk">PK</span></div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">Name</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">Department<span class="badge bfk">FK</span></div><span class="ft">VARCHAR → Divisions</span></div>
+    <div class="fr"><div class="fn">Category</div><span class="ft">VARCHAR (current — fast read)</span></div>
+    <div class="fr"><div class="fn">OriginalJoinDate</div><span class="ft">DATE — very first joining</span></div>
+    <div class="fr"><div class="fn">JoinDate</div><span class="ft">DATE — current engagement start</span></div>
+    <div class="fr"><div class="fn">LeaveBalance</div><span class="ft">FLOAT</span></div>
+    <div class="fr"><div class="fn">Status</div><span class="ft">ENUM: Active / Resigned</span></div>
+    <div class="fr"><div class="fn">ResignDate</div><span class="ft">DATE nullable</span></div>
+    <div class="fr"><div class="fn">CurrentEngagementId<span class="badge bfk">FK</span></div><span class="ft">INT → EmployeeEngagements</span></div>
+  </div>
+
+  <div class="tc bl">
+    <div class="th"><div class="th-dot"></div>EmployeeEngagements<div class="tb-new-badge">UPDATED</div></div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">EmpID<span class="badge bfk">FK</span></div><span class="ft">VARCHAR → Employees</span></div>
+    <div class="fr"><div class="fn">ContractPeriodId<span class="badge bfk">FK</span></div><span class="ft">INT → ContractPeriods</span></div>
+    <div class="fr"><div class="fn">Category</div><span class="ft">VARCHAR (category at this time)</span></div>
+    <div class="fr"><div class="fn">VendorId<span class="badge bfk">FK</span></div><span class="ft">INT → Vendors (vendor at this time)</span></div>
+    <div class="fr"><div class="fn">Department</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">StartDate</div><span class="ft">DATE</span></div>
+    <div class="fr"><div class="fn">EndDate</div><span class="ft">DATE nullable — NULL = active</span></div>
+    <div class="fr"><div class="fn">EndReason</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">IsCarriedOver</div><span class="ft">BOOLEAN — auto-carried from prev period</span></div>
+    <div class="fr"><div class="fn">PrevEngagementId<span class="badge bfk">FK</span></div><span class="ft">INT → self (links to prior chapter)</span></div>
+    <div class="fr" style="padding:6px 11px;background:rgba(133,183,235,.07)">
+      <span style="font-size:10px;color:var(--color-text-tertiary)">
+        EndReason: Resigned | Upgraded | Downgraded | ContractEnd | Transferred
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance -->
+<div class="section-label">Attendance &amp; Wages</div>
+<div class="grid g3">
+  <div class="tc am">
+    <div class="th"><div class="th-dot"></div>Attendance<div class="tb-new-badge">UPDATED</div></div>
+    <div class="fr"><div class="fn">Id<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">EmpID<span class="badge bfk">FK</span></div><span class="ft">VARCHAR → Employees</span></div>
+    <div class="fr"><div class="fn">EngagementId<span class="badge bfk">FK</span></div><span class="ft">INT → EmployeeEngagements</span></div>
+    <div class="fr"><div class="fn">ContractPeriodId<span class="badge bfk">FK</span></div><span class="ft">INT → ContractPeriods</span></div>
+    <div class="fr"><div class="fn">Year</div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Month</div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Day</div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">StatusValue</div><span class="ft">FLOAT</span></div>
+    <div class="fr"><div class="fn">LeaveType</div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">IsHoliday</div><span class="ft">BOOLEAN</span></div>
+    <div class="fr"><div class="fn">AutoSat</div><span class="ft">BOOLEAN</span></div>
+    <div class="fr" style="padding:6px 11px;background:rgba(239,159,39,.07)">
+      <span style="font-size:10px;color:var(--color-text-tertiary)">UNIQUE (EmpID, Year, Month, Day)</span>
+    </div>
+  </div>
+
+  <div class="tc am">
+    <div class="th"><div class="th-dot"></div>CalculationWages</div>
+    <div class="fr"><div class="fn">Year<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Month<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Category<span class="badge bpk">PK</span></div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">WageRate</div><span class="ft">FLOAT</span></div>
+  </div>
+
+  <div class="tc am">
+    <div class="th"><div class="th-dot"></div>CalculationOverrides</div>
+    <div class="fr"><div class="fn">Year<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Month<span class="badge bpk">PK</span></div><span class="ft">INT</span></div>
+    <div class="fr"><div class="fn">Category<span class="badge bpk">PK</span></div><span class="ft">VARCHAR</span></div>
+    <div class="fr"><div class="fn">EmpID<span class="badge bpk">PK</span><span class="badge bfk">FK</span></div><span class="ft">VARCHAR → Employees</span></div>
+    <div class="fr"><div class="fn">EngagementId<span class="badge bfk">FK</span></div><span class="ft">INT → EmployeeEngagements</span></div>
+    <div class="fr"><div class="fn">ContractPeriodId<span class="badge bfk">FK</span></div><span class="ft">INT → ContractPeriods</span></div>
+    <div class="fr"><div class="fn">FinalDays</div><span class="ft">FLOAT</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════ FLOW ════════════════════ -->
+<div class="flow">
+  <div class="flow-title">How a new Contract Period starts — data flow</div>
+
+  <div class="flow-row">
+    <div class="flow-box" style="background:#085041">Admin enters bid date + picks Vendor per Category</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background:#0B5C6B">Old ContractPeriod → Status=Closed, EndDate set</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background:#0B5C6B">New ContractPeriod row inserted → Status=Active</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:8px">
+    <div class="flow-box" style="background:#0C447C">All active Employees with that Category</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background:#0C447C">Old EmployeeEngagement → EndDate set, EndReason=ContractEnd</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background:#0C447C">New EmployeeEngagement row — IsCarriedOver=TRUE, PrevEngagementId=old Id</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:8px">
+    <div class="flow-box" style="background:#633806">From next working day → Attendance.ContractPeriodId = new period</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-note">Old period's attendance is sealed — never touched again</div>
+  </div>
+</div>
+
+<!-- ════════════════════ RELATIONS ════════════════════ -->
+<div class="rel-wrap">
+  <div class="rel-head">
+    <span>From</span><span></span><span>To</span><span>Description</span>
+  </div>
+
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>Vendors.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>ContractPeriods.VendorId</span>
+    <span class="rel-desc">Vendor wins multiple periods over time</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>ContractPeriods.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>ContractPeriodVendors</span>
+    <span class="rel-desc">Which vendors are active per period per category</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>ContractPeriods.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>EmployeeEngagements.ContractPeriodId</span>
+    <span class="rel-desc">All employee chapters in this period</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>Employees.ID</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>EmployeeEngagements.EmpID</span>
+    <span class="rel-desc">Full career history — every chapter</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>Employees.CurrentEngagementId</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card c1">1</span>EmployeeEngagements.Id</span>
+    <span class="rel-desc">Pointer to active chapter for fast reads</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>EmployeeEngagements.PrevEngagementId</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card c1">1</span>EmployeeEngagements.Id (self)</span>
+    <span class="rel-desc">Chains the career timeline — previous chapter</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>EmployeeEngagements.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>Attendance.EngagementId</span>
+    <span class="rel-desc">Who was this employee under on that day</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>ContractPeriods.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>Attendance.ContractPeriodId</span>
+    <span class="rel-desc">Which period this attendance day belongs to</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>AppUsers.PCNO</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>UserDivisions.PCNO</span>
+    <span class="rel-desc">User can access multiple divisions</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>Employees.ID</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>CalculationOverrides.EmpID</span>
+    <span class="rel-desc">Manual wage override per employee</span>
+  </div>
+  <div class="rel-row">
+    <span class="rel-from"><span class="card c1">1</span>ContractPeriods.Id</span>
+    <span class="rel-arr">→</span>
+    <span class="rel-to"><span class="card cn">∞</span>CalculationOverrides.ContractPeriodId</span>
+    <span class="rel-desc">Override is traceable to exact contract period</span>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="leg"><div class="ldot" style="background:#3C3489"></div>Identity / Auth</div>
+  <div class="leg"><div class="ldot" style="background:#085041"></div>Vendor</div>
+  <div class="leg"><div class="ldot" style="background:#0B5C6B"></div>Contract Period (New core)</div>
+  <div class="leg"><div class="ldot" style="background:#0C447C"></div>Employee</div>
+  <div class="leg"><div class="ldot" style="background:#633806"></div>Attendance / Wages</div>
+  <div class="leg"><div class="ldot" style="background:#444441"></div>Lookup / Config</div>
+  <div class="leg"><span style="font-size:10px;background:#085041;color:#E1F5EE;padding:1px 5px;border-radius:3px;font-weight:700">PK</span> Primary Key</div>
+  <div class="leg"><span style="font-size:10px;background:rgba(93,202,165,.25);color:#085041;padding:1px 5px;border-radius:3px;font-weight:700">FK</span> Foreign Key</div>
+</div>
+
+</body>
+</html>

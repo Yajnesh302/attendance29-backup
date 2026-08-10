@@ -1,0 +1,25 @@
+flowchart TD
+    START_SAT["For the First Saturday<br/>of each month"] --> LOOK_BACK["Look at last 5 working days<br/>(Mon-Fri) preceding this Saturday"]
+    LOOK_BACK --> CHECK_EACH["For each of the 5 days:<br/>Was employee Present(1), Half-Day(0.5),<br/>Paid Leave, Carried, Paired Paid/Unpaid,<br/>or Holiday?"]
+    
+    CHECK_EACH --> ALL_PRESENT{"All 5 days<br/>= YES?"}
+    
+    ALL_PRESENT -->|Yes| SAT_PRESENT["Saturday = Present<br/>(StatusValue = 1, AutoSat = 1)"]
+    ALL_PRESENT -->|No| SAT_ABSENT["Saturday = Absent<br/>(StatusValue = 0, AutoSat = 1)"]
+    
+    SAT_PRESENT --> HALF_DAY_CHECK{"Employee took<br/>a half-day<br/>in the week?"}
+    SAT_ABSENT --> HALF_DAY_CHECK
+    
+    HALF_DAY_CHECK -->|Yes| OVERRIDE_HALF["Saturday NOT marked absent<br/>(half-day counts as attendance)"]
+    HALF_DAY_CHECK -->|No| ADMIN_OVERRIDE{"Admin manually<br/>overrides?"}
+    
+    SAT_PRESENT --> ADMIN_OVERRIDE
+    SAT_ABSENT --> ADMIN_OVERRIDE
+    
+    ADMIN_OVERRIDE -->|Yes| MANUAL["Set AutoSat = 0<br/>Record remarks explaining override"]
+    ADMIN_OVERRIDE -->|No| DONE["Done"]
+    
+    OVERRIDE_HALF --> DONE
+    MANUAL --> DONE
+    
+    DONE --> NOTE["Note: Applies only to FIRST Saturday<br/>of each month. Other Saturdays<br/>not auto-calculated."]
