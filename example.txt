@@ -1,0 +1,18 @@
+i have to build an application using antigravity so you should give me prompt which i cant paste as a input prompt for antigravity. the application should run in a offline environment without any need of interent, it should run in visual studio 2015 version i.e targetFramework 4.5 it should use oracle 11g as database and active drectory for login authentication , the code should be in dotnet webforms method.  i will provide with a sample login page design and a webconfig file for reference which will be inside example folder. 
+the application is used to log the in and out time with the remark. the user should be able to select name of the employee which is already in the database in the database , which as employeename, pcno, divname etc so the user should be able to search using pcno or name and select that employee and enter the in time and date  by default the current time should be shown and user can edit it he also should enter the reason or remakr like the cause for visit. after checkup or something while checking out the user will enter the check out time and date by default it should be current date and time but user can change it. the application should allow to filter the check in check out based on the date range, filter based on employee etc.
+every entry shoud be vsible .
+and if there any suggestion or any feature that can be added from your side you can tell them.
+also if there is any question please ask and later give me the complter prompt.
+
+while saving the checkedin and checked out in database it should store employee name and pcno as well.
+while dispalying employee info it should also dispaly designation as well.
+can we keep like entring new data and the log in same page.
+the loading of data should be speed if pagination or seomthing is used it should not query every time.
+
+
+also can we add any new features is there any suggestion from you.the question is to you
+
+Idle/forgotten-checkout alert — flag entries that have been "checked in" for an unusually long time (e.g. >4 hours) so someone notices if a checkout was simply forgotten, rather than the record silently staying open forever. 
+we can use this but >2 days
+
+also the page should be more professional easy to use with proper UI UX , ony the login page design should remain same thats it
